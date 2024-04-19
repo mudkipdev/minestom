@@ -29,8 +29,6 @@ import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.instance.block.BlockHandler;
 import net.minestom.server.network.packet.server.CachedPacket;
 import net.minestom.server.network.packet.server.play.*;
-import net.minestom.server.permission.Permission;
-import net.minestom.server.permission.PermissionHandler;
 import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionEffect;
 import net.minestom.server.potion.TimedPotion;
@@ -79,8 +77,8 @@ import java.util.function.UnaryOperator;
  * <p>
  * To create your own entity you probably want to extend {@link LivingEntity} or {@link EntityCreature} instead.
  */
-public class Entity implements Viewable, Tickable, Schedulable, Snapshotable, EventHandler<EntityEvent>, Taggable,
-        PermissionHandler, HoverEventSource<ShowEntity>, Sound.Emitter, Shape {
+public class Entity implements Viewable, Tickable, Schedulable, Snapshotable, EventHandler<EntityEvent>,
+        Taggable, HoverEventSource<ShowEntity>, Sound.Emitter, Shape {
     private static final Int2ObjectSyncMap<Entity> ENTITY_BY_ID = Int2ObjectSyncMap.hashmap();
     private static final Map<UUID, Entity> ENTITY_BY_UUID = new ConcurrentHashMap<>();
     private static final AtomicInteger LAST_ENTITY_ID = new AtomicInteger();
@@ -145,7 +143,6 @@ public class Entity implements Viewable, Tickable, Schedulable, Snapshotable, Ev
     private final TagHandler tagHandler = TagHandler.newHandler();
     private final Scheduler scheduler = Scheduler.newScheduler();
     private final EventNode<EntityEvent> eventNode;
-    private final Set<Permission> permissions = new CopyOnWriteArraySet<>();
 
     protected UUID uuid;
     private boolean isActive; // False if entity has only been instanced without being added somewhere
@@ -536,12 +533,6 @@ public class Entity implements Viewable, Tickable, Schedulable, Snapshotable, Ev
         Set<Player> viewers = new HashSet<>(getViewers());
         getViewers().forEach(this::updateOldViewer);
         viewers.forEach(this::updateNewViewer);
-    }
-
-    @NotNull
-    @Override
-    public Set<Permission> getAllPermissions() {
-        return permissions;
     }
 
     /**
