@@ -3,6 +3,7 @@ package net.minestom.server.tag;
 import net.kyori.adventure.nbt.*;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.utils.Unit;
 import net.minestom.server.utils.collection.AutoIncrementMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -314,7 +315,11 @@ public class Tag<T> {
     public static <T extends Record> @NotNull Tag<T> View(@NotNull Class<T> type) {
         return View(TagRecord.serializer(type));
     }
-    
+
+    public static @NotNull Tag<Unit> Unit(@NotNull String key) {
+        return tag(key, Serializers.UNIT);
+    }
+
     /**
     * Creates a transient tag with the specified key. This tag does not get serialized
     * to NBT (Named Binary Tag) format and is not sent to the client. Unlike other tags,
@@ -324,7 +329,7 @@ public class Tag<T> {
     * @param <T> The type of the tag's value.
     * @param key The key.
     * @return A transient tag with the key.
-    */    
+    */
     public static <T> @NotNull Tag<T> Transient(@NotNull String key) {
         //noinspection unchecked
         return (Tag<T>) tag(key, Serializers.EMPTY);

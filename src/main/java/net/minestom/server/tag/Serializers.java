@@ -6,6 +6,7 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minestom.server.ServerFlag;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.utils.UniqueIdUtils;
+import net.minestom.server.utils.Unit;
 
 import java.util.function.Function;
 
@@ -29,6 +30,11 @@ final class Serializers {
             component -> StringBinaryTag.stringBinaryTag(GsonComponentSerializer.gson().serialize(component)));
 
     static final Entry<Object, ByteBinaryTag> EMPTY = new Entry<>(BinaryTagTypes.BYTE, unused -> null, component -> null);
+
+    static final Entry<Unit, StringBinaryTag> UNIT = new Entry<>(
+            BinaryTagTypes.STRING,
+            input -> Unit.INSTANCE,
+            component -> StringBinaryTag.stringBinaryTag(Unit.INSTANCE.toString()));
 
     static <T> Entry<T, CompoundBinaryTag> fromTagSerializer(TagSerializer<T> serializer) {
         return new Serializers.Entry<>(BinaryTagTypes.COMPOUND,

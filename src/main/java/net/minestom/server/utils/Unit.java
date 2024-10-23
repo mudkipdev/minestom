@@ -1,7 +1,11 @@
 package net.minestom.server.utils;
 
-public final class Unit {
-    //todo would rather just support void
+public enum Unit {
+    // todo would rather just support void
+    INSTANCE;
 
-    public static final Unit INSTANCE = new Unit();
+    @Override
+    public String toString() {
+        return "Unit";
+    }
 }
