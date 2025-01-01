@@ -137,11 +137,6 @@ record BlockImpl(@NotNull Registry.BlockEntry registry,
     }
 
     @Override
-    public @NotNull <T> Block withProperty(@NotNull BlockProperty<T> property, @NotNull T value) {
-        return this.withProperty(property.getName(), property.getEncoder().apply(value));
-    }
-
-    @Override
     public @NotNull Block withProperties(@NotNull Map<@NotNull String, @NotNull String> properties) {
         if (properties.isEmpty()) return this;
         final PropertyType[] propertyTypes = PROPERTIES_TYPE.get(id());

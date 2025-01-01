@@ -6,7 +6,15 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.function.Function;
 
-public abstract non-sealed class BlockProperty<T> implements BlockProperties {
+/**
+ * A block property is an attribute that can be assigned to a block. A block state is made up of the block type and optional properties.
+ * <p>
+ * Currently in Minecraft, a block property may either be a boolean, integer (with a pre-determined range), or an enum.
+ * For example, whether a block is waterlogged or not may be represented as a boolean, while the direction a stair block is facing may be represented as an enum.
+ * @see <a href="https://minecraft.wiki/w/Block_states">Minecraft Wiki</a>
+ * @param <T> The type of value this property represents.
+ */
+public abstract sealed class BlockProperty<T> implements BlockProperties permits BooleanProperty, IntegerProperty, EnumProperty {
     private final String name;
     private final Set<T> possibleValues;
     private final Function<T, String> encoder;

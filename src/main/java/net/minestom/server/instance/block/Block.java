@@ -42,7 +42,13 @@ public sealed interface Block extends StaticProtocolObject, TagReadable, Blocks 
     @NotNull Block withProperty(@NotNull String property, @NotNull String value);
 
     @Contract(pure = true)
-    @NotNull <T> Block withProperty(@NotNull BlockProperty<T> property, @NotNull T value);
+    default @NotNull <T> Block withProperty(@NotNull BlockProperty<T> property, @NotNull T value) {
+        if (property.getPossibleValues().contains(value)) {
+            return this.withProperty(property.getName(), property.getEncoder().apply(value));
+        } else {
+            throw new IllegalArgumentException(value + " is not a valid value for property \"" + property.getName() + "\"!");
+        }
+    }
 
     /**
      * Changes multiple properties at once.
