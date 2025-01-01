@@ -4,6 +4,7 @@ import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.batch.Batch;
+import net.minestom.server.instance.block.property.BlockProperty;
 import net.minestom.server.network.NetworkBuffer;
 import net.minestom.server.registry.Registry;
 import net.minestom.server.registry.StaticProtocolObject;
@@ -39,6 +40,9 @@ public sealed interface Block extends StaticProtocolObject, TagReadable, Blocks 
      */
     @Contract(pure = true)
     @NotNull Block withProperty(@NotNull String property, @NotNull String value);
+
+    @Contract(pure = true)
+    @NotNull <T> Block withProperty(@NotNull BlockProperty<T> property, @NotNull T value);
 
     /**
      * Changes multiple properties at once.
@@ -141,6 +145,10 @@ public sealed interface Block extends StaticProtocolObject, TagReadable, Blocks 
     @Contract(pure = true)
     default String getProperty(@NotNull String property) {
         return properties().get(property);
+    }
+
+    default <T> T getProperty(@NotNull BlockProperty<T> property) {
+        return property.getDecoder().apply(this.getProperty(property.getName()));
     }
 
     @Contract(pure = true)

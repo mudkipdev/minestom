@@ -25,6 +25,7 @@ import net.minestom.server.instance.LightingChunk;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.predicate.BlockPredicate;
 import net.minestom.server.instance.block.predicate.BlockTypeFilter;
+import net.minestom.server.instance.block.property.BlockProperty;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.inventory.PlayerInventory;
@@ -165,10 +166,10 @@ public class PlayerInit {
                 var itemStack = event.getItemStack();
                 var block = event.getInstance().getBlock(event.getPosition());
 
-                if ("false".equals(block.getProperty("waterlogged")) && itemStack.material().equals(Material.WATER_BUCKET)) {
-                    block = block.withProperty("waterlogged", "true");
-                } else if ("true".equals(block.getProperty("waterlogged")) && itemStack.material().equals(Material.BUCKET)) {
-                    block = block.withProperty("waterlogged", "false");
+                if (!block.getProperty(BlockProperty.WATERLOGGED) && itemStack.material().equals(Material.WATER_BUCKET)) {
+                    block = block.withProperty(BlockProperty.WATERLOGGED, true);
+                } else if (block.getProperty(BlockProperty.WATERLOGGED) && itemStack.material().equals(Material.BUCKET)) {
+                    block = block.withProperty(BlockProperty.WATERLOGGED, false);
                 } else return;
 
                 event.getInstance().setBlock(event.getPosition(), block);

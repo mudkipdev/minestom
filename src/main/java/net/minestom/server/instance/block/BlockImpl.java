@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
+import net.minestom.server.instance.block.property.BlockProperty;
 import net.minestom.server.registry.Registry;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.utils.block.BlockUtils;
@@ -133,6 +134,11 @@ record BlockImpl(@NotNull Registry.BlockEntry registry,
         final byte valueIndex = findValueIndex(propertyTypes[keyIndex], value, this);
         final long updatedProperties = updateIndex(propertiesArray, keyIndex, valueIndex);
         return compute(updatedProperties);
+    }
+
+    @Override
+    public @NotNull <T> Block withProperty(@NotNull BlockProperty<T> property, @NotNull T value) {
+        return this.withProperty(property.getName(), property.getEncoder().apply(value));
     }
 
     @Override
