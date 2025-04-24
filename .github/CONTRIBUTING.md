@@ -2,7 +2,7 @@
 #### **Did you find a bug?**
 * Open a new GitHub issue if it's not already reported.
 
-* Explain it clearly, with steps (or code) to reproduce it. 
+* Explain it clearly, with steps (or code) to reproduce it.
 
 #### **Did you write some code that fixes a bug?**
 * Open a new GitHub pull-request with the commits if it hasn't already been proposed.

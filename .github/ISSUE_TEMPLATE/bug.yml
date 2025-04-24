@@ -47,7 +47,7 @@ body:
       description: |
         Please create a reproducible sample to show us the bug in action and attach it below between the lines with the backticks.
         This helps us to verify that the bug is valid and prevents us from having to ask you for a sample later.
-        
+
         Without this we will be unlikely to be able to progress on the issue, so
         we'll regretfully have to close it.
 

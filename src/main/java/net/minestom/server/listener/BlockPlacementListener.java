@@ -152,7 +152,7 @@ public class BlockPlacementListener {
             // Client also doesn't predict placement of blocks on entities, but we need to refresh for cases where bounding boxes on the server don't match the client
             if (collisionEntity != player)
                 refresh(player, chunk);
-            
+
             return;
         }
 

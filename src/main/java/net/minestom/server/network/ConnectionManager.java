@@ -317,7 +317,7 @@ public final class ConnectionManager {
         for (final Player playPlayer : playPlayers)
             playPlayer.kick(SHUTDOWN_TEXT);
         this.playPlayers.clear();
-        
+
         this.keepAlivePlayers.clear();
         this.connectionPlayerMap.clear();
     }

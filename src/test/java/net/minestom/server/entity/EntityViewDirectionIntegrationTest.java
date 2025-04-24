@@ -52,7 +52,7 @@ public class EntityViewDirectionIntegrationTest {
         var instance = env.createFlatInstance();
         var entity = new Entity(EntityType.ZOMBIE);
         double eyeHeight = entity.getEyeHeight(); // adding this to some position Y coordinates, to look horizontally
-        
+
         entity.setInstance(instance, new Pos(0, 40, 0)).join();
 
         // make it look at its feet's position, it should look down

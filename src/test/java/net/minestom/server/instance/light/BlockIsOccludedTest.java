@@ -14,7 +14,7 @@ public class BlockIsOccludedTest {
     @Test
     public void blockAir() {
         Shape airBlock = Block.AIR.registry().collisionShape();
-        
+
         for (BlockFace face : BlockFace.values()) {
             assertFalse(airBlock.isOccluded(airBlock, face));
         }

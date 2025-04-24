@@ -74,7 +74,7 @@ public class Generators {
 
         // Generate fluids
         new FluidGenerator(resource("fluids.json"), outputFolder).generate();
-        
+
         LOGGER.info("Finished generating code");
     }
 

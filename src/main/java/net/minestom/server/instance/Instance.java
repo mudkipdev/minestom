@@ -439,7 +439,7 @@ public abstract class Instance implements Block.Getter, Block.Setter,
     /**
      * Sets the age of this instance in tick. It will send the age to all players.
      * Will send new age to all players in the instance, unaffected by {@link #getTimeSynchronizationTicks()}
-     * 
+     *
      * @param worldAge the age of this instance in tick
      */
     public void setWorldAge(long worldAge) {
