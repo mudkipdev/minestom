@@ -89,7 +89,14 @@ public final class MetadataHolder {
         final int id = entry.index();
 
         T current = get(entry);
-        if (Objects.equals(current, value)) return;
+
+        // If a metadata value is unchanged we should not send it. In particular we need to be careful with
+        //  sending bitmasks which will overwrite client-predicted values. See PR 3089 for more info.
+        // However, interpolation delay is expected to be sent regularly with the same value to begin
+        //  interpolation so we always send it for now.
+        if (Objects.equals(current, value) && entry != MetadataDef.Display.INTERPOLATION_DELAY) {
+            return;
+        }
 
         Metadata.Entry<?> result = switch (entry) {
             case MetadataDef.Entry.Index<T> v -> v.function().apply(value);
