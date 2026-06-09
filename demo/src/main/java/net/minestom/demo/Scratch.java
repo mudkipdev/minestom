@@ -9,10 +9,8 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.RelativeFlags;
 import net.minestom.server.network.ConnectionState;
-import net.minestom.server.network.NetworkBuffer;
 import net.minestom.server.network.packet.PacketReading;
 import net.minestom.server.network.packet.PacketVanilla;
-import net.minestom.server.network.packet.PacketWriting;
 import net.minestom.server.network.packet.client.ClientPacket;
 import net.minestom.server.network.packet.client.common.ClientPingRequestPacket;
 import net.minestom.server.network.packet.client.common.ClientSettingsPacket;
@@ -24,7 +22,6 @@ import net.minestom.server.network.packet.client.login.ClientLoginStartPacket;
 import net.minestom.server.network.packet.client.play.ClientPlayerPositionAndRotationPacket;
 import net.minestom.server.network.packet.client.play.ClientPlayerPositionPacket;
 import net.minestom.server.network.packet.client.status.StatusRequestPacket;
-import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.network.packet.server.common.KeepAlivePacket;
 import net.minestom.server.network.packet.server.common.PingResponsePacket;
 import net.minestom.server.network.packet.server.common.PluginMessagePacket;
@@ -70,12 +67,12 @@ public final class Scratch {
         var registries = Registries.vanilla();
 
         registries.dimensionType().register(DimensionType.OVERWORLD.key(), DimensionType
-                .builder(registries.dimensionType().get(DimensionType.OVERWORLD))
+                .builder(Objects.requireNonNull(registries.dimensionType().get(DimensionType.OVERWORLD)))
                 .ambientLight(1.0F)
                 .setAttribute(EnvironmentAttribute.AMBIENT_LIGHT_COLOR, new Color(0xFFFFFF))
                 .build());
 
-        var world = ScratchWorld.create(registries);
+        var world = new ScratchWorld(registries);
 
         try (ServerSocketChannel server = ServerSocketChannel.open()) {
             server.bind(ADDRESS);
@@ -90,7 +87,7 @@ public final class Scratch {
     }
 
     private static void serve(SocketChannel channel, Registries registries, ScratchWorld world) {
-        var connection = new Connection(channel, registries);
+        var connection = new ScratchConnection(channel, registries);
 
         try (channel) {
             var clientState = ConnectionState.HANDSHAKE;
@@ -98,22 +95,16 @@ public final class Scratch {
             while (channel.isOpen()) {
                 connection.readBuffer.readChannel(channel);
 
-                switch (PacketReading.readPackets(
-                        connection.readBuffer,
-                        PacketVanilla.CLIENT_PACKET_PARSER,
-                        clientState,
-                        PacketVanilla::nextClientState,
-                        false
-                )) {
+                switch (PacketReading.readPackets(connection.readBuffer, PacketVanilla.CLIENT_PACKET_PARSER, clientState, PacketVanilla::nextClientState, false)) {
                     case PacketReading.Result.Success<ClientPacket> success -> {
-                        for (var parsed : success.packets()) {
-                            clientState = parsed.nextState();
+                        for (var parsedPacket : success.packets()) {
+                            clientState = parsedPacket.nextState();
 
-                            if (parsed.packet() instanceof ClientHandshakePacket) {
+                            if (parsedPacket.packet() instanceof ClientHandshakePacket) {
                                 connection.serverState = clientState;
                             }
 
-                            switch (parsed.packet()) {
+                            switch (parsedPacket.packet()) {
                                 case StatusRequestPacket ignored -> connection.send(new ResponsePacket(createStatus()));
                                 case ClientPingRequestPacket ping -> connection.send(new PingResponsePacket(ping.number()));
                                 case ClientLoginStartPacket login -> connection.send(new LoginSuccessPacket(new GameProfile(login.profileId(), login.username())));
@@ -154,13 +145,13 @@ public final class Scratch {
         return Status.CODEC.encode(Transcoder.JSON, status).orElseThrow().toString();
     }
 
-    private static void sendConfigurationStart(Connection connection) {
+    private static void sendConfigurationStart(ScratchConnection connection) {
         connection.send(PluginMessagePacket.brandPacket("Minestom Scratch"));
         connection.send(new UpdateEnabledFeaturesPacket(List.of("minecraft:vanilla")));
         connection.send(new SelectKnownPacksPacket(List.of(SelectKnownPacksPacket.MINECRAFT_CORE)));
     }
 
-    private static void sendConfigurationData(Connection connection, Registries registries) {
+    private static void sendConfigurationData(ScratchConnection connection, Registries registries) {
         for (var packet : Registries.registryDataPackets(registries, false)) {
             connection.send(packet);
         }
@@ -169,9 +160,9 @@ public final class Scratch {
         connection.send(new FinishConfigurationPacket());
     }
 
-    private static void sendJoinGame(Connection connection, Registries registries, ScratchWorld world) {
+    private static void sendJoinGame(ScratchConnection connection, Registries registries, ScratchWorld world) {
         var dimensionTypeId = registries.dimensionType().getId(DimensionType.OVERWORLD);
-        var spawn = world.spawn();
+        var spawnPosition = world.getSpawnPosition();
 
         connection.send(new JoinGamePacket(
                 ENTITY_ID, false, List.of(WORLD), 1,
@@ -180,7 +171,8 @@ public final class Scratch {
                 false, true, null, 0, SEA_LEVEL, false));
 
         connection.send(new ServerDifficultyPacket(Difficulty.PEACEFUL, true));
-        connection.send(new SpawnPositionPacket(new WorldPos(WORLD, spawn), 0.0F, 0.0F));
+        connection.send(new SpawnPositionPacket(new WorldPos(WORLD, spawnPosition), 0.0F, 0.0F));
+
         connection.send(new PlayerAbilitiesPacket(
                 (byte) (PlayerAbilitiesPacket.FLAG_INVULNERABLE
                         | PlayerAbilitiesPacket.FLAG_ALLOW_FLYING
@@ -188,12 +180,12 @@ public final class Scratch {
                 0.05F, 0.1F));
 
         connection.send(new UpdateViewDistancePacket(connection.viewDistance));
-        connection.send(new PlayerPositionAndLookPacket(1, spawn, Vec.ZERO, 0.0F, 0.0F, RelativeFlags.NONE));
+        connection.send(new PlayerPositionAndLookPacket(1, spawnPosition, Vec.ZERO, 0.0F, 0.0F, RelativeFlags.NONE));
         connection.send(new SetTimePacket(TIME_OF_DAY, Map.of(WorldClock.OVERWORLD, new SetTimePacket.ClockState(TIME_OF_DAY, 0.0F, 0.0F))));
         connection.send(new ChangeGameStatePacket(ChangeGameStatePacket.Reason.LEVEL_CHUNKS_LOAD_START, 0));
 
-        connection.chunkX = spawn.chunkX();
-        connection.chunkZ = spawn.chunkZ();
+        connection.chunkX = spawnPosition.chunkX();
+        connection.chunkZ = spawnPosition.chunkZ();
 
         connection.send(new UpdateViewPositionPacket(connection.chunkX, connection.chunkZ));
         connection.send(new ChunkBatchStartPacket());
@@ -207,7 +199,7 @@ public final class Scratch {
         startKeepAlive(connection);
     }
 
-    private static void handleSettings(Connection connection, ScratchWorld world, int requestedViewDistance) {
+    private static void handleSettings(ScratchConnection connection, ScratchWorld world, int requestedViewDistance) {
         var newViewDistance = Math.min(requestedViewDistance, MAX_VIEW_DISTANCE);
         var oldViewDistance = connection.viewDistance;
 
@@ -224,26 +216,33 @@ public final class Scratch {
         connection.send(new UpdateViewDistancePacket(newViewDistance));
 
         if (newViewDistance > oldViewDistance) {
-            var batchSize = new int[]{0};
+            var batchSize = new AtomicInteger();
             connection.send(new ChunkBatchStartPacket());
 
             ChunkRange.chunksInRange(connection.chunkX, connection.chunkZ, newViewDistance, (chunkX, chunkZ) -> {
                 var distance = Math.max(Math.abs(chunkX - connection.chunkX), Math.abs(chunkZ - connection.chunkZ));
-                if (distance <= oldViewDistance) return;
+
+                if (distance <= oldViewDistance) {
+                    return;
+                }
+
                 connection.send(world.chunk(chunkX, chunkZ));
-                batchSize[0]++;
+                batchSize.incrementAndGet();
             });
 
-            connection.send(new ChunkBatchFinishedPacket(batchSize[0]));
+            connection.send(new ChunkBatchFinishedPacket(batchSize.get()));
         } else {
             ChunkRange.chunksInRange(connection.chunkX, connection.chunkZ, oldViewDistance, (chunkX, chunkZ) -> {
                 var distance = Math.max(Math.abs(chunkX - connection.chunkX), Math.abs(chunkZ - connection.chunkZ));
-                if (distance > newViewDistance) connection.send(new UnloadChunkPacket(chunkX, chunkZ));
+
+                if (distance > newViewDistance) {
+                    connection.send(new UnloadChunkPacket(chunkX, chunkZ));
+                }
             });
         }
     }
 
-    private static void startKeepAlive(Connection connection) {
+    private static void startKeepAlive(ScratchConnection connection) {
         Thread.ofVirtual().name("scratch-keep-alive-", 0).start(() -> {
             try {
                 while (connection.channel.isOpen()) {
@@ -256,7 +255,7 @@ public final class Scratch {
         });
     }
 
-    private static void handleMove(Connection connection, ScratchWorld world, Point position) {
+    private static void handleMove(ScratchConnection connection, ScratchWorld world, Point position) {
         var newChunkX = position.chunkX();
         var newChunkZ = position.chunkZ();
         var oldChunkX = connection.chunkX;
@@ -270,53 +269,17 @@ public final class Scratch {
         connection.chunkZ = newChunkZ;
         connection.send(new UpdateViewPositionPacket(newChunkX, newChunkZ));
 
-        ChunkRange.chunksInRangeDiffering(oldChunkX, oldChunkZ, newChunkX, newChunkZ, connection.viewDistance,
-                (chunkX, chunkZ) -> connection.send(new UnloadChunkPacket(chunkX, chunkZ)));
+        ChunkRange.chunksInRangeDiffering(oldChunkX, oldChunkZ, newChunkX, newChunkZ, connection.viewDistance, (chunkX, chunkZ) ->
+                connection.send(new UnloadChunkPacket(chunkX, chunkZ)));
 
-        var batchSize = new int[]{0};
+        var batchSize = new AtomicInteger();
         connection.send(new ChunkBatchStartPacket());
 
         ChunkRange.chunksInRangeDiffering(newChunkX, newChunkZ, oldChunkX, oldChunkZ, connection.viewDistance, (chunkX, chunkZ) -> {
             connection.send(world.chunk(chunkX, chunkZ));
-            batchSize[0]++;
+            batchSize.incrementAndGet();
         });
 
-        connection.send(new ChunkBatchFinishedPacket(batchSize[0]));
+        connection.send(new ChunkBatchFinishedPacket(batchSize.get()));
     }
-
-    private static final class Connection {
-        private final SocketChannel channel;
-        private final Registries registries;
-        private final NetworkBuffer readBuffer;
-        private ConnectionState serverState = ConnectionState.STATUS;
-        private int chunkX, chunkZ;
-        private int viewDistance = 2;
-        private boolean joined;
-
-        private Connection(SocketChannel channel, Registries registries) {
-            this.channel = channel;
-            this.registries = registries;
-            this.readBuffer = NetworkBuffer.resizableBuffer(4096, registries);
-        }
-
-        private synchronized void send(SendablePacket packet) {
-            var previousState = this.serverState;
-            var serverPacket = SendablePacket.extractServerPacket(previousState, packet);
-
-            if (serverPacket == null) {
-                throw new IllegalArgumentException("Unsupported packet: " + packet);
-            }
-
-            this.serverState = PacketVanilla.nextServerState(serverPacket, this.serverState);
-            var buffer = NetworkBuffer.resizableBuffer(1024, this.registries);
-            PacketWriting.writeFramedPacket(buffer, previousState, serverPacket, 0);
-
-            try {
-                while (!buffer.writeChannel(this.channel)) Thread.onSpinWait();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }
-    }
-
 }

@@ -1,10 +1,9 @@
 package net.minestom.demo;
 
+import net.minestom.server.coordinate.CoordConversion;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.Section;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.generator.Generator;
-import net.minestom.server.instance.generator.GeneratorImpl;
 import net.minestom.server.instance.heightmap.Heightmap;
 import net.minestom.server.network.NetworkBuffer;
 import net.minestom.server.network.packet.server.play.ChunkDataPacket;
@@ -20,56 +19,70 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-record ScratchWorld(byte[] chunkData, Map<Heightmap.Type, long[]> heightmaps, LightData lightData) {
+final class ScratchWorld {
     private static final int MIN_Y = DimensionType.VANILLA_MIN_Y;
     private static final int HEIGHT = DimensionType.VANILLA_MAX_Y - DimensionType.VANILLA_MIN_Y + 1;
     private static final int SECTION_COUNT = HEIGHT / 16;
-    private static final int GROUND_Y = 0;
+    private static final long SEED = 0x6A09E667F3BCC909L;
 
-    private static final Generator GENERATOR = unit -> {
-        unit.modifier().fillBiome(Biome.PLAINS);
-        unit.modifier().fillHeight(MIN_Y, GROUND_Y, Block.DIRT);
-        unit.modifier().fillHeight(MIN_Y, MIN_Y + 1, Block.BEDROCK);
-        unit.modifier().fillHeight(GROUND_Y, GROUND_Y + 1, Block.GRASS_BLOCK);
-    };
+    private final Registries registries;
+    private final BackroomsGenerator generator;
+    private final NetworkBuffer.Type<ChunkData.Section> serializer;
+    private final Map<Heightmap.Type, long[]> heightmaps;
+    private final LightData lightData;
+    private final ConcurrentHashMap<Long, ChunkDataPacket> chunks = new ConcurrentHashMap<>();
 
-    static ScratchWorld create(Registries registries) {
-        var genSections = new GeneratorImpl.GenSection[SECTION_COUNT];
-
-        for (var i = 0; i < SECTION_COUNT; i++) {
-            var section = new Section();
-            genSections[i] = new GeneratorImpl.GenSection(section.blockPalette(), section.biomePalette());
-        }
-
-        GENERATOR.generate(GeneratorImpl.chunk(registries.biome(), genSections, 0, MIN_Y / 16, 0));
-        var serializer = ChunkData.Section.networkType(registries.biome().size());
-
-        var chunkData = NetworkBuffer.makeArray(buffer -> {
-            for (var section : genSections) {
-                var blockCount = section.blocks().count();
-
-                buffer.write(serializer, new ChunkData.Section(
-                        (short) blockCount,
-                        (short) (blockCount > 0 ? 1 : 0),
-                        section.blocks(), section.biomes()));
-            }
-        }, registries);
-
-        return new ScratchWorld(chunkData, createHeightmaps(), createLightData());
+    ScratchWorld(Registries registries) {
+        this.registries = registries;
+        this.generator = new BackroomsGenerator(SEED);
+        this.serializer = ChunkData.Section.networkType(registries.biome().size());
+        this.heightmaps = createHeightmaps(this.generator.getSurfaceHeight());
+        this.lightData = createLightData();
     }
 
-    Vec spawn() {
-        return new Vec(8.5D, GROUND_Y + 2, 8.5D);
+    Vec getSpawnPosition() {
+        return this.generator.getSpawnPosition();
     }
 
     ChunkDataPacket chunk(int chunkX, int chunkZ) {
-        return new ChunkDataPacket(chunkX, chunkZ, new ChunkData(this.heightmaps, this.chunkData, Map.of()), this.lightData);
+        return this.chunks.computeIfAbsent(CoordConversion.chunkIndex(chunkX, chunkZ), _ -> this.generate(chunkX, chunkZ));
     }
 
-    private static Map<Heightmap.Type, long[]> createHeightmaps() {
+    private ChunkDataPacket generate(int chunkX, int chunkZ) {
+        var sections = new Section[SECTION_COUNT];
+        Arrays.setAll(sections, _ -> new Section());
+        var biomeId = this.registries.biome().getId(Biome.PLAINS);
+
+        for (var section : sections) {
+            section.biomePalette().fill(biomeId);
+        }
+
+        this.generator.generateChunk(chunkX, chunkZ, (localX, y, localZ, block) ->
+                setBlock(sections, localX, y, localZ, block));
+
+        var data = NetworkBuffer.makeArray(buffer -> {
+            for (var section : sections) {
+                var blockCount = section.blockPalette().count();
+
+                buffer.write(this.serializer, new ChunkData.Section(
+                        (short) blockCount,
+                        (short) (blockCount > 0 ? 1 : 0),
+                        section.blockPalette(), section.biomePalette()));
+            }
+        }, this.registries);
+
+        return new ChunkDataPacket(chunkX, chunkZ, new ChunkData(this.heightmaps, data, Map.of()), this.lightData);
+    }
+
+    private static void setBlock(Section[] sections, int localX, int y, int localZ, Block block) {
+        sections[(y - MIN_Y) >> 4].blockPalette().set(localX, (y - MIN_Y) & 15, localZ, block.stateId());
+    }
+
+    private static Map<Heightmap.Type, long[]> createHeightmaps(int surfaceHeight) {
         var heights = new short[16 * 16];
-        Arrays.fill(heights, (short) (GROUND_Y - (MIN_Y - 1)));
+        Arrays.fill(heights, (short) (surfaceHeight - MIN_Y));
         var packed = Heightmap.encode(heights, MathUtils.bitsToRepresent(HEIGHT));
 
         return Map.of(
