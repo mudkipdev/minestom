@@ -1,11 +1,19 @@
 plugins {
     `java-library`
+    id("org.gradlex.extra-java-module-info")
 }
 
 val javaVersion = System.getenv("JAVA_VERSION") ?: "25"
 
 group = "net.minestom"
 version = System.getenv("MINESTOM_VERSION") ?: "dev"
+
+extraJavaModuleInfo {
+    failOnMissingModuleInfo = false
+    automaticModule("com.viaversion:viaversion", "viaversion")
+    automaticModule("com.viaversion:viabackwards", "viabackwards")
+    automaticModule("com.viaversion:viarewind", "viarewind")
+}
 
 configurations.all {
     // We only use Jetbrains Annotations
@@ -22,6 +30,7 @@ repositories {
         maven(url = "https://central.sonatype.com/repository/maven-snapshots/")
 
     mavenCentral()
+    maven("https://repo.viaversion.com")
 }
 
 dependencies {

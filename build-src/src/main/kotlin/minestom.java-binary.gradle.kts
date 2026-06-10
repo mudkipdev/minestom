@@ -1,11 +1,19 @@
 plugins {
     java
     application
+    id("org.gradlex.extra-java-module-info")
 }
 
 val javaVersion = System.getenv("JAVA_VERSION") ?: "25"
 
 group = "net.minestom"
+
+extraJavaModuleInfo {
+    failOnMissingModuleInfo = false
+    automaticModule("com.viaversion:viaversion", "viaversion")
+    automaticModule("com.viaversion:viabackwards", "viabackwards")
+    automaticModule("com.viaversion:viarewind", "viarewind")
+}
 
 repositories {
     val dataVersion = libs.minestomData.get().version ?: ""
@@ -16,6 +24,7 @@ repositories {
         maven(url = "https://central.sonatype.com/repository/maven-snapshots/")
 
     mavenCentral()
+    maven("https://repo.viaversion.com")
 }
 
 java {

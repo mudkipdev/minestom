@@ -48,6 +48,21 @@ dependencies {
     api(libs.gson)
     implementation(libs.jcTools)
 
+    implementation(libs.viaversion)
+    implementation(libs.viabackwards)
+    implementation(libs.viarewind)
+    implementation(libs.netty.buffer)
+    implementation(libs.netty.transport)
+    implementation(libs.netty.codec)
+
+    implementation(libs.guava) {
+        exclude(group = "com.google.code.findbugs")
+        exclude(group = "org.checkerframework")
+        exclude(group = "com.google.errorprone")
+        exclude(group = "com.google.j2objc")
+        exclude(group = "com.google.guava", module = "listenablefuture")
+    }
+
     testImplementation(project(":testing"))
 }
 

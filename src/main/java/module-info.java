@@ -17,7 +17,15 @@ module net.minestom.server {
     requires jdk.jfr;
     requires java.desktop;
     requires java.management;
+    requires java.logging;
     requires net.minestom.data;
+
+    requires viaversion;
+    requires viabackwards;
+    requires viarewind;
+    requires io.netty.buffer;
+    requires io.netty.codec;
+    requires io.netty.transport;
 
     // EXPORTS
     exports net.minestom.server;
@@ -88,6 +96,7 @@ module net.minestom.server {
     exports net.minestom.server.exception;
     exports net.minestom.server.extras.lan;
     exports net.minestom.server.extras.mojangAuth;
+    exports net.minestom.server.extras.viaversion;
     exports net.minestom.server.game;
     exports net.minestom.server.gamedata;
     exports net.minestom.server.instance;

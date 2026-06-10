@@ -18,6 +18,7 @@ import net.minestom.server.component.DataComponents;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.extras.lan.OpenToLAN;
 import net.minestom.server.extras.lan.OpenToLANConfig;
+import net.minestom.server.extras.viaversion.ViaVersion;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockEntityType;
 import net.minestom.server.instance.block.BlockManager;
@@ -165,11 +166,7 @@ public class Main {
         ));
 
         new PlayerInit().init();
-
-//        VelocityProxy.enable("abcdef");
-        //BungeeCordProxy.enable();
-
-//        MojangAuth.init();
+        ViaVersion.init();
 
         // useful for testing - we don't need to worry about event calls so just set this to a long time
         OpenToLAN.open(new OpenToLANConfig().eventCallDelay(Duration.of(1, TimeUnit.DAY)));
