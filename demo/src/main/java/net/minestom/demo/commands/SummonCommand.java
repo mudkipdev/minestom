@@ -1,5 +1,6 @@
 package net.minestom.demo.commands;
 
+import net.minestom.demo.entity.DebugDisplay;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
@@ -38,14 +39,19 @@ public class SummonCommand extends Command {
     private void execute(CommandSender commandSender, CommandContext commandContext) {
         final Entity entity = commandContext.get(entityClass).instantiate(commandContext.get(this.entity));
         //noinspection ConstantConditions - One couldn't possibly execute a command without being in an instance
-        entity.setInstance(((Player) commandSender).getInstance(), commandContext.get(pos).fromSender(commandSender));
+        entity.setInstance(((Player) commandSender).getInstance(), commandContext.get(pos).fromSender(commandSender))
+                .thenRun(() -> {
+                    if (entity instanceof EntityCreature creature) {
+                        DebugDisplay.attach(creature);
+                    }
+                });
     }
 
     @SuppressWarnings("unused")
     enum EntityClass {
         BASE(Entity::new),
         LIVING(LivingEntity::new),
-        CREATURE(EntityCreature::new);
+        CREATURE(net.minestom.demo.entity.DemoMob::create);
         private final EntityFactory factory;
 
         EntityClass(EntityFactory factory) {

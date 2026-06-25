@@ -47,9 +47,19 @@ module net.minestom.server {
     exports net.minestom.server.crypto;
     exports net.minestom.server.dialog;
     exports net.minestom.server.entity;
+    exports net.minestom.server.entity.mob;
     exports net.minestom.server.entity.ai;
+    exports net.minestom.server.entity.ai.brain;
+    exports net.minestom.server.entity.ai.brain.behavior;
+    exports net.minestom.server.entity.ai.brain.memory;
+    exports net.minestom.server.entity.ai.brain.schedule;
+    exports net.minestom.server.entity.ai.brain.sensing;
+    exports net.minestom.server.entity.ai.control;
     exports net.minestom.server.entity.ai.goal;
-    exports net.minestom.server.entity.ai.target;
+    exports net.minestom.server.entity.ai.goal.target;
+    exports net.minestom.server.entity.ai.navigation;
+    exports net.minestom.server.entity.ai.targeting;
+    exports net.minestom.server.entity.ai.util;
     exports net.minestom.server.entity.attribute;
     exports net.minestom.server.entity.damage;
     exports net.minestom.server.entity.metadata;
@@ -72,7 +82,6 @@ module net.minestom.server {
     exports net.minestom.server.entity.metadata.water;
     exports net.minestom.server.entity.metadata.water.fish;
     exports net.minestom.server.entity.pathfinding;
-    exports net.minestom.server.entity.pathfinding.followers;
     exports net.minestom.server.entity.pathfinding.generators;
     exports net.minestom.server.entity.vehicle;
     exports net.minestom.server.event;

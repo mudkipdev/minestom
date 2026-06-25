@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(rootProject)
+    implementation("net.goldenstack:trove:3.0")
 
     runtimeOnly(libs.bundles.logback)
 }

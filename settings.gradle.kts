@@ -1,6 +1,7 @@
 rootProject.name = "minestom"
 
 includeBuild("build-src")
+includeBuild("../trove")
 
 include("code-generators")
 include("testing")

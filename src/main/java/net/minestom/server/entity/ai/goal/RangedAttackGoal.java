@@ -1,172 +1,104 @@
 package net.minestom.server.entity.ai.goal;
 
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityCreature;
-import net.minestom.server.entity.EntityProjectile;
-import net.minestom.server.entity.EntityType;
-import net.minestom.server.entity.ai.GoalSelector;
-import net.minestom.server.entity.pathfinding.Navigator;
-import net.minestom.server.utils.time.Cooldown;
-import net.minestom.server.utils.time.TimeUnit;
-import net.minestom.server.utils.validate.Check;
+import net.minestom.server.entity.LivingEntity;
+import net.minestom.server.entity.ai.Goal;
+import org.jetbrains.annotations.Nullable;
 
-import java.time.Duration;
-import java.time.temporal.TemporalUnit;
-import java.util.function.Function;
+import java.util.EnumSet;
 
-public class RangedAttackGoal extends GoalSelector {
-    private final Cooldown cooldown = new Cooldown(Duration.of(5, TimeUnit.SERVER_TICK));
+public class RangedAttackGoal extends Goal {
+    private final EntityCreature mob;
+    private final RangedAttackMob rangedAttackMob;
+    @Nullable
+    private LivingEntity target;
+    private int attackTime = -1;
+    private final double speedModifier;
+    private int seeTime;
+    private final int attackIntervalMin;
+    private final int attackIntervalMax;
+    private final float attackRadius;
+    private final float attackRadiusSqr;
 
-    private long lastShot;
-    private final Duration delay;
-    private final int attackRangeSquared;
-    private final int desirableRangeSquared;
-    private final boolean comeClose;
-    private final double power;
-    private final double spread;
-
-    private ProjectileGenerator projectileGenerator;
-
-    private boolean stop;
-    private Entity cachedTarget;
-
-    /**
-     * @param entityCreature the entity to add the goal to.
-     * @param delay          the delay between each shots.
-     * @param attackRange    the allowed range the entity can shoot others.
-     * @param desirableRange the desirable range: the entity will try to stay no further than this distance.
-     * @param comeClose      whether entity should go as close as possible to the target whether target is not in line of sight.
-     * @param spread         shot spread (0 for best accuracy).
-     * @param power          shot power (1 for normal).
-     * @param timeUnit       the unit of the delay.
-     */
-    public RangedAttackGoal(EntityCreature entityCreature, int delay, int attackRange, int desirableRange, boolean comeClose, double power, double spread, TemporalUnit timeUnit) {
-        this(entityCreature, Duration.of(delay, timeUnit), attackRange, desirableRange, comeClose, power, spread);
+    public RangedAttackGoal(final RangedAttackMob mob, final double speedModifier, final int attackInterval, final float attackRadius) {
+        this(mob, speedModifier, attackInterval, attackInterval, attackRadius);
     }
 
-    /**
-     * @param entityCreature the entity to add the goal to.
-     * @param delay          the delay between each shots.
-     * @param attackRange    the allowed range the entity can shoot others.
-     * @param desirableRange the desirable range: the entity will try to stay no further than this distance.
-     * @param comeClose      whether entity should go as close as possible to the target whether target is not in line of sight.
-     * @param spread         shot spread (0 for best accuracy).
-     * @param power          shot power (1 for normal).
-     */
-    public RangedAttackGoal(EntityCreature entityCreature, Duration delay, int attackRange, int desirableRange, boolean comeClose, double power, double spread) {
-        super(entityCreature);
-        this.delay = delay;
-        this.attackRangeSquared = attackRange * attackRange;
-        this.desirableRangeSquared = desirableRange * desirableRange;
-        this.comeClose = comeClose;
-        this.power = power;
-        this.spread = spread;
-        Check.argCondition(desirableRange > attackRange, "Desirable range can not exceed attack range!");
-    }
-
-    public Cooldown getCooldown() {
-        return this.cooldown;
-    }
-
-    public void setProjectileGenerator(ProjectileGenerator projectileGenerator) {
-        this.projectileGenerator = projectileGenerator;
-    }
-
-    public void setProjectileGenerator(Function<Entity, EntityProjectile> projectileGenerator) {
-        this.projectileGenerator = (shooter, target, pow, spr) -> {
-            EntityProjectile projectile = projectileGenerator.apply(shooter);
-            projectile.setInstance(shooter.getInstance(), shooter.getPosition().add(0D, shooter.getEyeHeight(), 0D));
-            projectile.shoot(target, pow, spr);
-        };
-    }
-
-    private ProjectileGenerator getProjectileGeneratorOrDefault() {
-        if (projectileGenerator == null) {
-            setProjectileGenerator(shooter -> new EntityProjectile(shooter, EntityType.ARROW));
-        }
-        return projectileGenerator;
-    }
-
-    @Override
-    public boolean shouldStart() {
-        this.cachedTarget = findTarget();
-        return this.cachedTarget != null;
-    }
-
-    @Override
-    public void start() {
-        this.entityCreature.getNavigator().setPathTo(this.cachedTarget.getPosition());
-    }
-
-    @Override
-    public void tick(long time) {
-        Entity target;
-        if (this.cachedTarget != null) {
-            target = this.cachedTarget;
-            this.cachedTarget = null;
+    public RangedAttackGoal(
+            final RangedAttackMob mob, final double speedModifier, final int attackIntervalMin, final int attackIntervalMax, final float attackRadius
+    ) {
+        if (!(mob instanceof EntityCreature)) {
+            throw new IllegalArgumentException("ArrowAttackGoal requires Mob implements RangedAttackMob");
         } else {
-            target = findTarget();
-        }
-        if (target == null) {
-            this.stop = true;
-            return;
-        }
-        double distanceSquared = this.entityCreature.getDistanceSquared(target);
-        boolean comeClose = false;
-        if (distanceSquared <= this.attackRangeSquared) {
-            if (!Cooldown.hasCooldown(time, this.lastShot, this.delay)) {
-                if (this.entityCreature.hasLineOfSight(target)) {
-                    final var to = target.getPosition().add(0D, target.getEyeHeight(), 0D);
-                    this.getProjectileGeneratorOrDefault().shootProjectile(this.entityCreature, to, this.power, this.spread);
-
-                    this.lastShot = time;
-                } else {
-                    comeClose = this.comeClose;
-                }
-            }
-        }
-        Navigator navigator = this.entityCreature.getNavigator();
-        final var pathPosition = navigator.getPathPosition();
-        if (!comeClose && distanceSquared <= this.desirableRangeSquared) {
-            if (pathPosition != null) {
-                navigator.setPathTo(null);
-            }
-            this.entityCreature.lookAt(target);
-            return;
-        }
-        final var targetPosition = target.getPosition();
-        if (pathPosition == null || !pathPosition.samePoint(targetPosition)) {
-            if (this.cooldown.isReady(time)) {
-                this.cooldown.refreshLastUpdate(time);
-                navigator.setPathTo(targetPosition);
-            }
+            this.rangedAttackMob = mob;
+            this.mob = (EntityCreature) mob;
+            this.speedModifier = speedModifier;
+            this.attackIntervalMin = attackIntervalMin;
+            this.attackIntervalMax = attackIntervalMax;
+            this.attackRadius = attackRadius;
+            this.attackRadiusSqr = attackRadius * attackRadius;
+            this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
         }
     }
 
     @Override
-    public boolean shouldEnd() {
-        return this.stop;
+    public boolean canUse() {
+        Entity bestTarget = this.mob.getTarget();
+        if (bestTarget instanceof LivingEntity living && !living.isDead()) {
+            this.target = living;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public void end() {
-        // Stop following the target
-        this.entityCreature.getNavigator().setPathTo(null);
+    public boolean canContinueToUse() {
+        return this.canUse() || !this.target.isDead() && !this.mob.getNavigation().isDone();
     }
 
-    /**
-     * The function used to generate a projectile.
-     */
-    public interface ProjectileGenerator {
-        /**
-         * Shoots a projectile.
-         *
-         * @param shooter the shooter.
-         * @param target  the target position.
-         * @param power   the shot power.
-         * @param spread  the shot spread.
-         */
-        void shootProjectile(EntityCreature shooter, Pos target, double power, double spread);
+    @Override
+    public void stop() {
+        this.target = null;
+        this.seeTime = 0;
+        this.attackTime = -1;
+    }
+
+    @Override
+    public boolean requiresUpdateEveryTick() {
+        return true;
+    }
+
+    @Override
+    public void tick() {
+        double targetDistSqr = this.mob.getDistanceSquared(this.target);
+        boolean hasLineOfSight = this.mob.getSensing().hasLineOfSight(this.target);
+        if (hasLineOfSight) {
+            this.seeTime++;
+        } else {
+            this.seeTime = 0;
+        }
+
+        if (!(targetDistSqr > (double) this.attackRadiusSqr) && this.seeTime >= 5) {
+            this.mob.getNavigation().stop();
+        } else {
+            this.mob.getNavigation().moveTo(this.target, this.speedModifier);
+        }
+
+        this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);
+        if (--this.attackTime == 0) {
+            if (!hasLineOfSight) {
+                return;
+            }
+
+            float dist = (float) Math.sqrt(targetDistSqr) / this.attackRadius;
+            float power = Math.clamp(dist, 0.1F, 1.0F);
+            this.rangedAttackMob.performRangedAttack(this.target, power);
+            this.attackTime = (int) Math.floor(dist * (float) (this.attackIntervalMax - this.attackIntervalMin) + (float) this.attackIntervalMin);
+        } else if (this.attackTime < 0) {
+            double alpha = Math.sqrt(targetDistSqr) / (double) this.attackRadius;
+            this.attackTime = (int) Math.floor((double) this.attackIntervalMin + alpha * ((double) this.attackIntervalMax - (double) this.attackIntervalMin));
+        }
     }
 }

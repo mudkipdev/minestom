@@ -944,6 +944,21 @@ public class Entity implements Viewable, Tickable, Schedulable, Snapshotable, Ev
     }
 
     /**
+     * Adds to the entity velocity without sending a velocity packet, letting the next
+     * {@link #movementTick()} integrate it (friction, gravity, collision) and synchronize the
+     * resulting position. This is the per-tick acceleration path used by mob movement controls;
+     * it is the equivalent of vanilla {@code Entity#addDeltaMovement}.
+     *
+     * @param x the velocity to add on the X axis, in blocks/second
+     * @param y the velocity to add on the Y axis, in blocks/second
+     * @param z the velocity to add on the Z axis, in blocks/second
+     */
+    @ApiStatus.Internal
+    public void addVelocity(double x, double y, double z) {
+        this.velocity = this.velocity.add(x, y, z);
+    }
+
+    /**
      * Gets if the entity currently has a velocity applied.
      *
      * @return true if the entity is moving

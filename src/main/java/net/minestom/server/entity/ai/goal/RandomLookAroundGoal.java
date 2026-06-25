@@ -1,81 +1,47 @@
 package net.minestom.server.entity.ai.goal;
 
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.EntityCreature;
-import net.minestom.server.entity.ai.GoalSelector;
+import net.minestom.server.entity.ai.Goal;
 
-import java.util.Random;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.EnumSet;
 
-public class RandomLookAroundGoal extends GoalSelector {
-    private static final Random RANDOM = new Random();
-    private final int chancePerTick;
-    private final Supplier<Integer> minimalLookTimeSupplier;
-    private final Function<EntityCreature, Vec> randomDirectionFunction;
-    private Vec lookDirection;
-    private int lookTime = 0;
+public class RandomLookAroundGoal extends Goal {
+    private final EntityCreature mob;
+    private double relX;
+    private double relZ;
+    private int lookTime;
 
-    public RandomLookAroundGoal(EntityCreature entityCreature, int chancePerTick) {
-        this(entityCreature, chancePerTick,
-                // These two functions act similarly enough to how MC randomly looks around.
-
-                // Look in one direction for at most 40 ticks and at minimum 20 ticks.
-                () -> 20 + RANDOM.nextInt(20),
-                // Look at a random block
-                (creature) -> {
-                    final double n = Math.PI * 2 * RANDOM.nextDouble();
-                    return new Vec(
-                            (float) Math.cos(n),
-                            0,
-                            (float) Math.sin(n)
-                    );
-                });
-    }
-
-    /**
-     * @param entityCreature          Creature that should randomly look around.
-     * @param chancePerTick           The chance (per tick) that the entity looks around. Setting this to N would mean there is a 1 in N chance.
-     * @param minimalLookTimeSupplier A supplier that returns the minimal amount of time an entity looks in a direction.
-     * @param randomDirectionFunction A function that returns a random vector that the entity will look in/at.
-     */
-    public RandomLookAroundGoal(
-            EntityCreature entityCreature,
-            int chancePerTick,
-            Supplier<Integer> minimalLookTimeSupplier,
-            Function<EntityCreature, Vec> randomDirectionFunction) {
-        super(entityCreature);
-        this.chancePerTick = chancePerTick;
-        this.minimalLookTimeSupplier = minimalLookTimeSupplier;
-        this.randomDirectionFunction = randomDirectionFunction;
+    public RandomLookAroundGoal(final EntityCreature mob) {
+        this.mob = mob;
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
     }
 
     @Override
-    public boolean shouldStart() {
-        if (RANDOM.nextInt(chancePerTick) != 0) {
-            return false;
-        }
-        return entityCreature.getNavigator().getPathPosition() == null;
+    public boolean canUse() {
+        return this.mob.getRandom().nextFloat() < 0.02F;
+    }
+
+    @Override
+    public boolean canContinueToUse() {
+        return this.lookTime >= 0;
     }
 
     @Override
     public void start() {
-        lookTime = minimalLookTimeSupplier.get();
-        lookDirection = randomDirectionFunction.apply(entityCreature);
+        double rnd = (Math.PI * 2) * this.mob.getRandom().nextDouble();
+        this.relX = Math.cos(rnd);
+        this.relZ = Math.sin(rnd);
+        this.lookTime = 20 + this.mob.getRandom().nextInt(20);
     }
 
     @Override
-    public void tick(long time) {
-        --lookTime;
-        entityCreature.refreshPosition(entityCreature.getPosition().withDirection(lookDirection));
+    public boolean requiresUpdateEveryTick() {
+        return true;
     }
 
     @Override
-    public boolean shouldEnd() {
-        return this.lookTime < 0;
-    }
-
-    @Override
-    public void end() {
+    public void tick() {
+        this.lookTime--;
+        this.mob.getLookControl().setLookAt(this.mob.getPosition().x() + this.relX, this.mob.getPosition().y() + this.mob.getEyeHeight(), this.mob.getPosition().z() + this.relZ);
     }
 }

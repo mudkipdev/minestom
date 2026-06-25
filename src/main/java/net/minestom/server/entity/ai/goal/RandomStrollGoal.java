@@ -2,76 +2,97 @@ package net.minestom.server.entity.ai.goal;
 
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.EntityCreature;
-import net.minestom.server.entity.ai.GoalSelector;
+import net.minestom.server.entity.ai.Goal;
+import net.minestom.server.entity.ai.util.DefaultRandomPos;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
+import java.util.EnumSet;
 
-public class RandomStrollGoal extends GoalSelector {
+public class RandomStrollGoal extends Goal {
+    public static final int DEFAULT_INTERVAL = 120;
+    protected final EntityCreature mob;
+    protected double wantedX;
+    protected double wantedY;
+    protected double wantedZ;
+    protected final double speedModifier;
+    protected int interval;
+    protected boolean forceTrigger;
+    private final boolean checkNoActionTime;
 
-    private static final long DELAY = TimeUnit.MILLISECONDS.toNanos(2500);
+    public RandomStrollGoal(final EntityCreature mob, final double speedModifier) {
+        this(mob, speedModifier, 120);
+    }
 
-    private final int radius;
-    private final List<Vec> closePositions;
-    private final Random random = new Random();
+    public RandomStrollGoal(final EntityCreature mob, final double speedModifier, final int interval) {
+        this(mob, speedModifier, interval, true);
+    }
 
-    private long lastStroll;
-
-    public RandomStrollGoal(EntityCreature entityCreature, int radius) {
-        super(entityCreature);
-        this.radius = radius;
-        this.closePositions = getNearbyBlocks(radius);
+    public RandomStrollGoal(final EntityCreature mob, final double speedModifier, final int interval, final boolean checkNoActionTime) {
+        this.mob = mob;
+        this.speedModifier = speedModifier;
+        this.interval = interval;
+        this.checkNoActionTime = checkNoActionTime;
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE));
     }
 
     @Override
-    public boolean shouldStart() {
-        return System.nanoTime() - lastStroll >= DELAY;
+    public boolean canUse() {
+        if (this.mob.isBeingRidden()) {
+            return false;
+        } else {
+            if (!this.forceTrigger) {
+                if (this.checkNoActionTime && this.getNoActionTime() >= 100) {
+                    return false;
+                }
+
+                if (this.mob.getRandom().nextInt(reducedTickDelay(this.interval)) != 0) {
+                    return false;
+                }
+            }
+
+            Vec pos = this.getPosition();
+            if (pos == null) {
+                return false;
+            } else {
+                this.wantedX = pos.x();
+                this.wantedY = pos.y();
+                this.wantedZ = pos.z();
+                this.forceTrigger = false;
+                return true;
+            }
+        }
+    }
+
+    @Nullable
+    protected Vec getPosition() {
+        return DefaultRandomPos.getPos(this.mob, 10, 7);
+    }
+
+    @Override
+    public boolean canContinueToUse() {
+        return !this.mob.getNavigation().isDone() && !this.mob.isBeingRidden();
     }
 
     @Override
     public void start() {
-        int remainingAttempt = closePositions.size();
-        while (remainingAttempt-- > 0) {
-            final int index = random.nextInt(closePositions.size());
-            final Vec position = closePositions.get(index);
-
-            final var target = entityCreature.getPosition().add(position);
-            final boolean result = entityCreature.getNavigator().setPathTo(target);
-            if (result) {
-                break;
-            }
-        }
+        this.mob.getNavigation().moveTo(this.wantedX, this.wantedY, this.wantedZ, this.speedModifier);
     }
 
     @Override
-    public void tick(long time) {
+    public void stop() {
+        this.mob.getNavigation().stop();
+        super.stop();
     }
 
-    @Override
-    public boolean shouldEnd() {
-        return true;
+    public void trigger() {
+        this.forceTrigger = true;
     }
 
-    @Override
-    public void end() {
-        this.lastStroll = System.nanoTime();
+    public void setInterval(final int interval) {
+        this.interval = interval;
     }
 
-    public int getRadius() {
-        return radius;
-    }
-
-    private static List<Vec> getNearbyBlocks(int radius) {
-        List<Vec> blocks = new ArrayList<>();
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                for (int z = -radius; z <= radius; z++) {
-                    blocks.add(new Vec(x, y, z));
-                }
-            }
-        }
-        return blocks;
+    protected int getNoActionTime() {
+        return 0;
     }
 }

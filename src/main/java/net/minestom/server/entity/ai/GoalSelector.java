@@ -1,100 +1,118 @@
 package net.minestom.server.entity.ai;
 
-import net.minestom.server.entity.Entity;
-import net.minestom.server.entity.EntityCreature;
-import org.jetbrains.annotations.Nullable;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 
-import java.lang.ref.WeakReference;
+public class GoalSelector {
+    private static final WrappedGoal NO_GOAL = new WrappedGoal(Integer.MAX_VALUE, new Goal() {
+        @Override
+        public boolean canUse() {
+            return false;
+        }
+    }) {
+        @Override
+        public boolean isRunning() {
+            return false;
+        }
+    };
+    private final Map<Goal.Flag, WrappedGoal> lockedFlags = new EnumMap<>(Goal.Flag.class);
+    private final Set<WrappedGoal> availableGoals = new LinkedHashSet<>();
+    private final EnumSet<Goal.Flag> disabledFlags = EnumSet.noneOf(Goal.Flag.class);
 
-public abstract class GoalSelector {
-
-    private WeakReference<EntityAIGroup> aiGroupWeakReference;
-    protected EntityCreature entityCreature;
-
-    public GoalSelector(EntityCreature entityCreature) {
-        this.entityCreature = entityCreature;
+    public GoalSelector() {
     }
 
-    /**
-     * Whether this {@link GoalSelector} should start.
-     *
-     * @return true to start
-     */
-    public abstract boolean shouldStart();
+    public void addGoal(final int prio, final Goal goal) {
+        this.availableGoals.add(new WrappedGoal(prio, goal));
+    }
 
-    /**
-     * Starts this {@link GoalSelector}.
-     */
-    public abstract void start();
-
-    /**
-     * Called every tick when this {@link GoalSelector} is running.
-     *
-     * @param time the time of the update in milliseconds
-     */
-    public abstract void tick(long time);
-
-    /**
-     * Whether this {@link GoalSelector} should end.
-     *
-     * @return true to end
-     */
-    public abstract boolean shouldEnd();
-
-    /**
-     * Ends this {@link GoalSelector}.
-     */
-    public abstract void end();
-
-    /**
-     * Finds a target based on the entity {@link TargetSelector}.
-     *
-     * @return the target entity, null if not found
-     */
-    @Nullable
-    public Entity findTarget() {
-        EntityAIGroup aiGroup = getAIGroup();
-        if (aiGroup == null) {
-            return null;
-        }
-        for (TargetSelector targetSelector : aiGroup.getTargetSelectors()) {
-            final Entity entity = targetSelector.findTarget();
-            if (entity != null) {
-                return entity;
+    public void removeAllGoals(final Predicate<Goal> predicate) {
+        for (WrappedGoal availableGoal : this.availableGoals) {
+            if (predicate.test(availableGoal.getGoal()) && availableGoal.isRunning()) {
+                availableGoal.stop();
             }
         }
-        return null;
+
+        this.availableGoals.removeIf(goal -> predicate.test(goal.getGoal()));
     }
 
-    /**
-     * Gets the entity behind the goal selector.
-     *
-     * @return the entity
-     */
-    public EntityCreature getEntityCreature() {
-        return entityCreature;
+    public void removeGoal(final Goal toRemove) {
+        this.removeAllGoals(goal -> goal == toRemove);
     }
 
-    /**
-     * Changes the entity affected by the goal selector.
-     * <p>
-     * WARNING: this does not add the goal selector to {@code entityCreature},
-     * this only change the internal entity AI group's field. Be sure to remove the goal from
-     * the previous entity AI group and add it to the new one using {@link EntityAIGroup#getGoalSelectors()}.
-     *
-     * @param entityCreature the new affected entity
-     */
-    public void setEntityCreature(EntityCreature entityCreature) {
-        this.entityCreature = entityCreature;
+    private static boolean goalContainsAnyFlags(final WrappedGoal goal, final EnumSet<Goal.Flag> disabledFlags) {
+        for (Goal.Flag flag : goal.getFlags()) {
+            if (disabledFlags.contains(flag)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    void setAIGroup(EntityAIGroup group) {
-        this.aiGroupWeakReference = new WeakReference<>(group);
+    private static boolean goalCanBeReplacedForAllFlags(final WrappedGoal goal, final Map<Goal.Flag, WrappedGoal> lockedFlags) {
+        for (Goal.Flag flag : goal.getFlags()) {
+            if (!lockedFlags.getOrDefault(flag, NO_GOAL).canBeReplacedBy(goal)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    @Nullable
-    protected EntityAIGroup getAIGroup() {
-        return this.aiGroupWeakReference.get();
+    public void tick() {
+        for (WrappedGoal goal : this.availableGoals) {
+            if (goal.isRunning() && (goalContainsAnyFlags(goal, this.disabledFlags) || !goal.canContinueToUse())) {
+                goal.stop();
+            }
+        }
+
+        this.lockedFlags.entrySet().removeIf(entry -> !entry.getValue().isRunning());
+
+        for (WrappedGoal goalx : this.availableGoals) {
+            if (!goalx.isRunning() && !goalContainsAnyFlags(goalx, this.disabledFlags) && goalCanBeReplacedForAllFlags(goalx, this.lockedFlags) && goalx.canUse()) {
+                for (Goal.Flag flag : goalx.getFlags()) {
+                    WrappedGoal currentGoal = this.lockedFlags.getOrDefault(flag, NO_GOAL);
+                    currentGoal.stop();
+                    this.lockedFlags.put(flag, goalx);
+                }
+
+                goalx.start();
+            }
+        }
+
+        this.tickRunningGoals(true);
     }
 
+    public void tickRunningGoals(final boolean forceTickAllRunningGoals) {
+        for (WrappedGoal goal : this.availableGoals) {
+            if (goal.isRunning() && (forceTickAllRunningGoals || goal.requiresUpdateEveryTick())) {
+                goal.tick();
+            }
+        }
+    }
+
+    public Set<WrappedGoal> getAvailableGoals() {
+        return this.availableGoals;
+    }
+
+    public void disableControlFlag(final Goal.Flag flag) {
+        this.disabledFlags.add(flag);
+    }
+
+    public void enableControlFlag(final Goal.Flag flag) {
+        this.disabledFlags.remove(flag);
+    }
+
+    public void setControlFlag(final Goal.Flag flag, final boolean enabled) {
+        if (enabled) {
+            this.enableControlFlag(flag);
+        } else {
+            this.disableControlFlag(flag);
+        }
+    }
 }

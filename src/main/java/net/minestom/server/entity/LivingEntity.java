@@ -25,6 +25,7 @@ import net.minestom.server.event.entity.EntitySetFireEvent;
 import net.minestom.server.event.item.EntityEquipEvent;
 import net.minestom.server.event.item.PickupItemEvent;
 import net.minestom.server.instance.EntityTracker;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.inventory.EquipmentHandler;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.component.AttributeList;
@@ -65,6 +66,7 @@ public class LivingEntity extends Entity implements EquipmentHandler {
     protected boolean isDead;
 
     protected Damage lastDamage;
+    private long lastDamageTime;
 
     // Bounding box used for items' pickup (see LivingEntity#setBoundingBox)
     protected BoundingBox expandedBoundingBox;
@@ -196,8 +198,18 @@ public class LivingEntity extends Entity implements EquipmentHandler {
     @Override
     public void update(long time) {
         // Fire
-        if (remainingFireTicks > 0 && --remainingFireTicks == 0) {
-            EventDispatcher.callCancellable(new EntityFireExtinguishEvent(this, true), () -> entityMeta.setOnFire(false));
+        if (remainingFireTicks > 0) {
+            if (getEntityType().registry().fireImmune()) {
+                remainingFireTicks = 0;
+                entityMeta.setOnFire(false);
+            } else {
+                if (remainingFireTicks % 20 == 0) {
+                    damage(DamageType.ON_FIRE, 1.0f);
+                }
+                if (--remainingFireTicks == 0) {
+                    EventDispatcher.callCancellable(new EntityFireExtinguishEvent(this, true), () -> entityMeta.setOnFire(false));
+                }
+            }
         }
 
         // Items picking
@@ -265,6 +277,7 @@ public class LivingEntity extends Entity implements EquipmentHandler {
         refreshIsDead(true); // So the entity isn't killed over and over again
         triggerStatus((byte) EntityStatuses.LivingEntity.PLAY_DEATH_SOUND); // Start death animation status
         setPose(EntityPose.DYING);
+        playSound(getDeathSound());
         setHealth(0);
 
         // Reset velocity
@@ -277,6 +290,56 @@ public class LivingEntity extends Entity implements EquipmentHandler {
 
         EntityDeathEvent entityDeathEvent = new EntityDeathEvent(this);
         EventDispatcher.call(entityDeathEvent);
+    }
+
+    /**
+     * The sound played when this entity is hurt, or {@code null} to fall back to the damage type's
+     * generic sound. Mobs override this; mirrors vanilla {@code LivingEntity#getHurtSound}.
+     */
+    protected @Nullable SoundEvent getHurtSound(Damage damage) {
+        return null;
+    }
+
+    /**
+     * The sound played when this entity dies, or {@code null} for none. Mobs override this; mirrors
+     * vanilla {@code LivingEntity#getDeathSound}.
+     */
+    protected @Nullable SoundEvent getDeathSound() {
+        return null;
+    }
+
+    /**
+     * The volume of this entity's sounds. Mirrors vanilla {@code LivingEntity#getSoundVolume}.
+     */
+    protected float getSoundVolume() {
+        return 1.0f;
+    }
+
+    /**
+     * The pitch of this entity's voice sounds. Mirrors vanilla {@code Mob#getVoicePitch}.
+     */
+    protected float getVoicePitch() {
+        return 1.0f;
+    }
+
+    /**
+     * The sound source category for this entity's sounds. Mirrors vanilla {@code Entity#getSoundSource}.
+     */
+    protected Source getSoundSource() {
+        return Source.NEUTRAL;
+    }
+
+    /**
+     * Plays the given sound at this entity's position to its viewers and itself, using this entity's
+     * sound source, volume, and voice pitch. No-op when {@code sound} is {@code null}.
+     */
+    protected void playSound(@Nullable SoundEvent sound) {
+        if (sound == null) {
+            return;
+        }
+        final Pos pos = getPosition();
+        sendPacketToViewersAndSelf(AdventurePacketConvertor.createSoundPacket(
+                Sound.sound(sound, getSoundSource(), getSoundVolume(), getVoicePitch()), pos.x(), pos.y(), pos.z()));
     }
 
     /**
@@ -294,7 +357,7 @@ public class LivingEntity extends Entity implements EquipmentHandler {
      * @param ticks duration of fire in ticks
      */
     public void setFireTicks(int ticks) {
-        int fireTicks = Math.max(0, ticks);
+        int fireTicks = getEntityType().registry().fireImmune() ? 0 : Math.max(0, ticks);
         if (fireTicks > 0) {
             EntitySetFireEvent entitySetFireEvent = new EntitySetFireEvent(this, ticks);
             EventDispatcher.call(entitySetFireEvent);
@@ -333,10 +396,13 @@ public class LivingEntity extends Entity implements EquipmentHandler {
             return false;
         }
 
-        EntityDamageEvent entityDamageEvent = new EntityDamageEvent(this, damage, damage.getSound(this));
+        final SoundEvent hurtSound = getHurtSound(damage);
+        EntityDamageEvent entityDamageEvent = new EntityDamageEvent(this, damage, hurtSound != null ? hurtSound : damage.getSound(this));
         EventDispatcher.callCancellable(entityDamageEvent, () -> {
             // Set the last damage type since the event is not cancelled
             this.lastDamage = entityDamageEvent.getDamage();
+            final Instance damageInstance = getInstance();
+            this.lastDamageTime = damageInstance != null ? damageInstance.getWorldAge() : 0L;
 
             float remainingDamage = entityDamageEvent.getDamage().getAmount();
 
@@ -369,16 +435,10 @@ public class LivingEntity extends Entity implements EquipmentHandler {
             // play damage sound
             final SoundEvent sound = entityDamageEvent.getSound();
             if (sound != null) {
-                Source soundCategory;
-                if (this instanceof Player) {
-                    soundCategory = Source.PLAYER;
-                } else {
-                    // TODO: separate living entity categories
-                    soundCategory = Source.HOSTILE;
-                }
-
+                final Source soundCategory = this instanceof Player ? Source.PLAYER : getSoundSource();
                 Pos pos = getPosition();
-                ServerPacket packet = AdventurePacketConvertor.createSoundPacket(Sound.sound(sound, soundCategory, 1f, 1f), pos.x(), pos.y(), pos.z());
+                ServerPacket packet = AdventurePacketConvertor.createSoundPacket(
+                        Sound.sound(sound, soundCategory, getSoundVolume(), getVoicePitch()), pos.x(), pos.y(), pos.z());
                 sendPacketToViewersAndSelf(packet);
             }
         });
@@ -395,6 +455,11 @@ public class LivingEntity extends Entity implements EquipmentHandler {
     public boolean isImmune(RegistryKey<DamageType> type) {
         if (type.equals(DamageType.OUT_OF_WORLD)) {
             return false;
+        }
+        if (getEntityType().registry().fireImmune()
+                && (type.equals(DamageType.ON_FIRE) || type.equals(DamageType.IN_FIRE)
+                || type.equals(DamageType.LAVA) || type.equals(DamageType.HOT_FLOOR) || type.equals(DamageType.CAMPFIRE))) {
+            return true;
         }
         return isInvulnerable();
     }
@@ -430,6 +495,12 @@ public class LivingEntity extends Entity implements EquipmentHandler {
      * @return the last damage source, null if not any
      */
     public @Nullable Damage getLastDamageSource() {
+        // Vanilla forgets the last damage source after 40 ticks (2 seconds), so reactions such as
+        // panicking naturally expire rather than persisting forever.
+        final Instance instance = getInstance();
+        if (this.lastDamage != null && instance != null && instance.getWorldAge() - this.lastDamageTime > 40L) {
+            this.lastDamage = null;
+        }
         return lastDamage;
     }
 

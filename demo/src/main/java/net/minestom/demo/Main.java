@@ -6,6 +6,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.demo.block.SignHandler;
+import net.minestom.demo.entity.MobLoot;
 import net.minestom.demo.block.TestBlockHandler;
 import net.minestom.demo.block.placement.BedPlacementRule;
 import net.minestom.demo.block.placement.DripstonePlacementRule;
@@ -13,6 +14,16 @@ import net.minestom.demo.commands.*;
 import net.minestom.demo.recipe.ShapelessRecipe;
 import net.minestom.server.Auth;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.EntityCreature;
+import net.minestom.server.entity.LivingEntity;
+import net.minestom.server.entity.PlayerHand;
+import net.minestom.server.entity.Player;
+import net.minestom.server.event.player.PlayerEntityInteractEvent;
+import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.entity.damage.Damage;
+import net.minestom.server.entity.damage.DamageType;
+import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.event.server.ServerListPingEvent;
@@ -116,6 +127,25 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        MobLoot.register(MinecraftServer.getGlobalEventHandler());
+
+        MinecraftServer.getGlobalEventHandler().addListener(PlayerEntityInteractEvent.class, event -> {
+            if (event.getHand() == PlayerHand.MAIN && event.getTarget() instanceof EntityCreature creature) {
+                creature.interact(event.getPlayer(), event.getHand());
+            }
+        });
+
+        MinecraftServer.getGlobalEventHandler().addListener(EntityAttackEvent.class, event -> {
+            if (event.getEntity() instanceof LivingEntity attacker && event.getTarget() instanceof LivingEntity victim) {
+                if (victim instanceof Player player
+                        && (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR)) {
+                    return;
+                }
+                final float damage = (float) attacker.getAttributeValue(Attribute.ATTACK_DAMAGE);
+                victim.damage(Damage.fromEntity(attacker, damage <= 0.0F ? 1.0F : damage));
+            }
+        });
 
         MinecraftServer.getGlobalEventHandler().addListener(ServerListPingEvent.class, event -> {
             int onlinePlayers = MinecraftServer.getConnectionManager().getOnlinePlayers().size();
