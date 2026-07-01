@@ -20,7 +20,7 @@ public class PiglinBrute extends Monster {
         setEquipment(EquipmentSlot.MAIN_HAND, ItemStack.of(Material.GOLDEN_AXE));
         getNavigation().setCanOpenDoors(true);
 
-        getGoalSelector().addGoal(7, new MeleeAttackGoal(this, 0.35, false));
+        getGoalSelector().addGoal(7, new MeleeAttackGoal(this, 1.0, false));
         getGoalSelector().addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
         getGoalSelector().addGoal(8, new RandomLookAroundGoal(this));
         getGoalSelector().addGoal(9, new WaterAvoidingRandomStrollGoal(this, 1.0));

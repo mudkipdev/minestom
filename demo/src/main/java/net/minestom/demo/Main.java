@@ -63,6 +63,7 @@ public class Main {
         blockManager.registerHandler(TestBlockHandler.INSTANCE.getKey(), () -> TestBlockHandler.INSTANCE);
 
         CommandManager commandManager = MinecraftServer.getCommandManager();
+        commandManager.register(new KillAllCommand());
         commandManager.register(new TestCommand());
         commandManager.register(new EntitySelectorCommand());
         commandManager.register(new HealthCommand());
