@@ -1,5 +1,6 @@
 package net.minestom.server.command.builder.arguments.minecraft;
 
+import net.kyori.adventure.key.Key;
 import net.minestom.server.command.ArgumentParserType;
 import net.minestom.server.utils.Range;
 
@@ -15,8 +16,8 @@ public class ArgumentFloatRange extends ArgumentRange<Range.Float, Float> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.FLOAT_RANGE;
+    public Key parser() {
+        return ArgumentParserType.FLOAT_RANGE.key();
     }
 
     @Override

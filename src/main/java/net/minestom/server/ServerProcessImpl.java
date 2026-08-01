@@ -5,6 +5,7 @@ import net.minestom.server.advancements.AdvancementManager;
 import net.minestom.server.adventure.ClickCallbackManager;
 import net.minestom.server.adventure.bossbar.BossBarManager;
 
+import net.minestom.command.builder.arguments.ArgumentCommand;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.event.EventDispatcher;
@@ -87,6 +88,7 @@ final class ServerProcessImpl implements ServerProcess, Registries.Delegating {
         this.instance = new InstanceManager(this);
         this.block = new BlockManager();
         this.command = new CommandManager();
+        ArgumentCommand.setDefaultDispatcher(this.command::getDispatcher);
         this.recipe = new RecipeManager();
         this.team = new TeamManager();
         this.eventHandler = new GlobalEventHandler();

@@ -1,8 +1,8 @@
 package net.minestom.server.listener;
 
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.suggestion.Suggestion;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.suggestion.Suggestion;
 import net.minestom.server.entity.Player;
 import net.minestom.server.network.packet.client.play.ClientTabCompletePacket;
 import net.minestom.server.network.packet.server.play.TabCompletePacket;

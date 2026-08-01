@@ -48,6 +48,8 @@ dependencies {
     api(libs.gson)
     implementation(libs.jcTools)
 
+    api(project(":command"))
+
     testImplementation(project(":testing"))
 }
 

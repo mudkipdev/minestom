@@ -1,7 +1,7 @@
 package net.minestom.demo.commands;
 
 import net.minestom.demo.block.TestBlockHandler;
-import net.minestom.server.command.builder.Command;
+import net.minestom.command.builder.Command;
 import net.minestom.server.command.builder.arguments.minecraft.ArgumentBlockState;
 import net.minestom.server.command.builder.arguments.relative.ArgumentRelativeBlockPosition;
 import net.minestom.server.entity.Player;

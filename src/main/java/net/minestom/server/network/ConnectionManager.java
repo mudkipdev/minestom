@@ -25,7 +25,7 @@ import net.minestom.server.network.player.PlayerSocketConnection;
 import net.minestom.server.network.plugin.LoginPluginMessageProcessor;
 import net.minestom.server.registry.Registries;
 import net.minestom.server.registry.StaticProtocolObject;
-import net.minestom.server.utils.StringUtils;
+import net.minestom.command.util.StringUtils;
 import net.minestom.server.utils.collection.ConcurrentMessageQueues;
 import org.jctools.queues.MessagePassingQueue;
 import org.jetbrains.annotations.ApiStatus;

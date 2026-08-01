@@ -1,5 +1,6 @@
 package net.minestom.server.command.builder.arguments.relative;
 
+import net.kyori.adventure.key.Key;
 import net.minestom.server.command.ArgumentParserType;
 import net.minestom.server.coordinate.Vec;
 
@@ -17,8 +18,8 @@ public class ArgumentRelativeVec2 extends ArgumentRelativeVec {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.VEC2;
+    public Key parser() {
+        return ArgumentParserType.VEC2.key();
     }
 
     @Override

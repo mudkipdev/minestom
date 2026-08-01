@@ -1,6 +1,8 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.Command;
+import net.minestom.command.Graph;
+import net.minestom.command.CommandParser;
+import net.minestom.command.builder.Command;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 

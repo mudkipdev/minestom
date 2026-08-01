@@ -1,7 +1,9 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandContext;
+import net.minestom.command.CommandSender;
+import net.minestom.command.Graph;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.network.packet.server.play.DeclareCommandsPacket;
 import org.junit.jupiter.api.Test;

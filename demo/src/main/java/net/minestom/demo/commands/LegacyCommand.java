@@ -1,7 +1,7 @@
 package net.minestom.demo.commands;
 
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.SimpleCommand;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.SimpleCommand;
 import net.minestom.server.entity.Player;
 import org.jetbrains.annotations.Nullable;
 

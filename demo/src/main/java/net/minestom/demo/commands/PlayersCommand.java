@@ -2,9 +2,9 @@ package net.minestom.demo.commands;
 
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandContext;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandContext;
 
 import java.util.List;
 

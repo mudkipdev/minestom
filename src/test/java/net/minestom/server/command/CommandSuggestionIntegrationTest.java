@@ -1,7 +1,7 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.suggestion.SuggestionEntry;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.suggestion.SuggestionEntry;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.network.packet.client.play.ClientTabCompletePacket;
 import net.minestom.server.network.packet.server.play.TabCompletePacket;

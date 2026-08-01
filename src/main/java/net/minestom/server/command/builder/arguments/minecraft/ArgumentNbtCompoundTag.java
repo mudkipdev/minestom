@@ -1,11 +1,12 @@
 package net.minestom.server.command.builder.arguments.minecraft;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.minestom.server.adventure.MinestomAdventure;
 import net.minestom.server.command.ArgumentParserType;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 
 import java.io.IOException;
 
@@ -32,8 +33,8 @@ public class ArgumentNbtCompoundTag extends Argument<CompoundBinaryTag> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.NBT_COMPOUND_TAG;
+    public Key parser() {
+        return ArgumentParserType.NBT_COMPOUND_TAG.key();
     }
 
     @Override

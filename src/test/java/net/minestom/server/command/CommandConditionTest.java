@@ -1,9 +1,10 @@
 package net.minestom.server.command;
 
+import net.minestom.command.CommandSender;
+import net.minestom.command.Graph;
 import net.kyori.adventure.identity.Identity;
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandDispatcher;
-import net.minestom.server.tag.TagHandler;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandDispatcher;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -466,11 +467,6 @@ public class CommandConditionTest {
     }
 
     private static final class Sender implements CommandSender {
-        @Override
-        public TagHandler tagHandler() {
-            return null;
-        }
-
         @Override
         public Identity identity() {
             return Identity.nil();

@@ -2,6 +2,7 @@ rootProject.name = "minestom"
 
 includeBuild("build-src")
 
+include("command")
 include("code-generators")
 include("testing")
 

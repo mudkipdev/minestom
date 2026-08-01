@@ -1,6 +1,7 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.Command;
+import net.minestom.command.Graph;
+import net.minestom.command.builder.Command;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

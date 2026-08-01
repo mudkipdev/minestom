@@ -1,11 +1,11 @@
 package net.minestom.demo.commands;
 
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandContext;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.arguments.ArgumentBoolean;
-import net.minestom.server.command.builder.arguments.number.ArgumentInteger;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandContext;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.arguments.ArgumentBoolean;
+import net.minestom.command.builder.arguments.number.ArgumentInteger;
 import net.minestom.server.command.builder.arguments.relative.ArgumentRelativeBlockPosition;
 import net.minestom.server.command.builder.condition.Conditions;
 import net.minestom.server.coordinate.Vec;

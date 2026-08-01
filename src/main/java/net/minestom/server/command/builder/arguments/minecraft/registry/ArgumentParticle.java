@@ -1,5 +1,6 @@
 package net.minestom.server.command.builder.arguments.minecraft.registry;
 
+import net.kyori.adventure.key.Key;
 import net.minestom.server.command.ArgumentParserType;
 import net.minestom.server.particle.Particle;
 
@@ -13,8 +14,8 @@ public class ArgumentParticle extends ArgumentRegistry<Particle> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.PARTICLE;
+    public Key parser() {
+        return ArgumentParserType.PARTICLE.key();
     }
 
     @Override

@@ -1,7 +1,9 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandContext;
+import net.minestom.command.CommandSender;
+import net.minestom.command.Graph;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandContext;
 import org.junit.jupiter.api.Test;
 
 import static net.minestom.server.command.builder.arguments.ArgumentType.*;
@@ -131,5 +133,5 @@ public class GraphConversionTest {
     private static void dummyExecutor(CommandSender sender, CommandContext context) {
     }
 
-    private static final Graph.Execution dummyExecution = new GraphImpl.ExecutionImpl(null, null, null, GraphConversionTest::dummyExecutor, null);
+    private static final Graph.Execution dummyExecution = Graph.execution(null, null, null, GraphConversionTest::dummyExecutor, null);
 }

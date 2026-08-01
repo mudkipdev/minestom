@@ -8,9 +8,9 @@ import net.minestom.server.adventure.MinestomAdventure;
 import net.minestom.server.codec.Result;
 import net.minestom.server.codec.Transcoder;
 import net.minestom.server.command.ArgumentParserType;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 import net.minestom.server.component.DataComponent;
 import net.minestom.server.component.DataComponentMap;
 import net.minestom.server.component.DataComponents;
@@ -45,8 +45,8 @@ public class ArgumentItemStack extends Argument<ItemStack> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.ITEM_STACK;
+    public Key parser() {
+        return ArgumentParserType.ITEM_STACK.key();
     }
 
     /**

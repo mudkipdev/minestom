@@ -1,10 +1,11 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.CommandContext;
-import net.minestom.server.command.builder.arguments.Argument;
+import net.minestom.command.ServerSender;
+import net.minestom.command.builder.CommandContext;
+import net.minestom.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentType;
-import net.minestom.server.command.builder.suggestion.Suggestion;
-import net.minestom.server.command.builder.suggestion.SuggestionEntry;
+import net.minestom.command.builder.suggestion.Suggestion;
+import net.minestom.command.builder.suggestion.SuggestionEntry;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

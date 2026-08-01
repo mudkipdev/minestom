@@ -1,5 +1,8 @@
 package net.minestom.server.command;
 
+import net.minestom.command.ServerSender;
+import net.minestom.command.CommandParser;
+import net.minestom.command.Graph;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import org.junit.jupiter.api.Test;
 
@@ -85,7 +88,7 @@ public class CommandParseTest {
                         x -> x.append(Word("b").setDefaultValue("B"),
                                 x1 -> x1.append(Word("c").setDefaultValue("C"),
                                         x2 -> x2.append(Word("d").setDefaultValue("D"),
-                                                new GraphImpl.ExecutionImpl(null, null, null,
+                                                Graph.execution(null, null, null,
                                                         (_, context) -> {
                                                             b.set(true);
                                                             assertEquals(expectedFirstArg.get(), context.get("a"));
@@ -156,6 +159,6 @@ public class CommandParseTest {
     }
 
     private static Graph.Execution createExecutor(AtomicBoolean atomicBoolean) {
-        return new GraphImpl.ExecutionImpl(null, null, null, (_, _) -> atomicBoolean.set(true), null);
+        return Graph.execution(null, null, null, (_, _) -> atomicBoolean.set(true), null);
     }
 }

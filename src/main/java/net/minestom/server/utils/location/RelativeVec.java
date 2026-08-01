@@ -1,6 +1,6 @@
 package net.minestom.server.utils.location;
 
-import net.minestom.server.command.CommandSender;
+import net.minestom.command.CommandSender;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;

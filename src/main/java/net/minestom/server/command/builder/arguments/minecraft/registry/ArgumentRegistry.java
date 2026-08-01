@@ -1,8 +1,8 @@
 package net.minestom.server.command.builder.arguments.minecraft.registry;
 
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 
 public abstract class ArgumentRegistry<T> extends Argument<T> {
 

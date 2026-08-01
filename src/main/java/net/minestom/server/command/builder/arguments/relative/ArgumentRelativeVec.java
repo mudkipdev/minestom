@@ -1,10 +1,10 @@
 package net.minestom.server.command.builder.arguments.relative;
 
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.utils.StringUtils;
+import net.minestom.command.util.StringUtils;
 import net.minestom.server.utils.location.RelativeVec;
 
 import java.util.function.Function;

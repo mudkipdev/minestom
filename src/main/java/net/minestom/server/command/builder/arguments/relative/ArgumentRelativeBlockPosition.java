@@ -1,5 +1,6 @@
 package net.minestom.server.command.builder.arguments.relative;
 
+import net.kyori.adventure.key.Key;
 import net.minestom.server.command.ArgumentParserType;
 
 import java.util.function.Function;
@@ -16,8 +17,8 @@ public class ArgumentRelativeBlockPosition extends ArgumentRelativeVec {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.BLOCK_POS;
+    public Key parser() {
+        return ArgumentParserType.BLOCK_POS.key();
     }
 
     @Override

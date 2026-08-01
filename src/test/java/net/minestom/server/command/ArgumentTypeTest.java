@@ -1,5 +1,6 @@
 package net.minestom.server.command;
 
+import net.minestom.command.ServerSender;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.kyori.adventure.nbt.IntArrayBinaryTag;
@@ -12,10 +13,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.color.TeamColor;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.arguments.ArgumentEnum;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.arguments.ArgumentEnum;
 import net.minestom.server.command.builder.arguments.ArgumentType;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.EntityType;

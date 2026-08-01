@@ -2,9 +2,9 @@ package net.minestom.server.command.builder.arguments.minecraft;
 
 import net.kyori.adventure.key.KeyPattern;
 import net.minestom.server.command.ArgumentParserType;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 import net.kyori.adventure.key.Key;
 
 /**
@@ -30,8 +30,8 @@ public class ArgumentResourceLocation extends Argument<Key> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.RESOURCE_LOCATION;
+    public Key parser() {
+        return ArgumentParserType.RESOURCE_LOCATION.key();
     }
 
     @Override

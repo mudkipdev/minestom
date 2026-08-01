@@ -1,7 +1,7 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandResult;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandResult;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import org.junit.jupiter.api.Test;
 

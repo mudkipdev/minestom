@@ -2,9 +2,9 @@ package net.minestom.demo.commands;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandContext;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.command.builder.condition.Conditions;
 import net.minestom.server.entity.Player;

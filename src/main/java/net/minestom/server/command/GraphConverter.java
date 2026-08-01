@@ -1,16 +1,31 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.arguments.*;
+import net.kyori.adventure.key.Key;
+import net.minestom.command.CommandManager;
+import net.minestom.command.CommandParser;
+import net.minestom.command.Graph;
+import net.minestom.command.builder.arguments.*;
 import net.minestom.server.entity.Player;
 import net.minestom.server.network.packet.server.play.DeclareCommandsPacket;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
-final class GraphConverter {
+/**
+ * Converts a platform-independent command {@link Graph} into the Minecraft command graph packet.
+ */
+@ApiStatus.Internal
+public final class GraphConverter {
+    private static final Map<Key, ArgumentParserType> PARSER_BY_KEY =
+            Arrays.stream(ArgumentParserType.values())
+                    .collect(Collectors.toUnmodifiableMap(ArgumentParserType::key, Function.identity()));
+
     private GraphConverter() {
         //no instance
     }
@@ -120,7 +135,7 @@ final class GraphConverter {
                     Argument<?> entry = entries.get(i);
                     if (i == entries.size() - 1) {
                         // Last will be the parent of next args
-                        final int[] l = append(manager, new GraphImpl.NodeImpl(entry, null, List.of()), to, redirects,
+                        final int[] l = append(manager, Graph.node(entry), to, redirects,
                                 id, redirect, player, argToPacketId);
                         for (int n : l) {
                             to.get(n).children = node.children;
@@ -131,11 +146,11 @@ final class GraphConverter {
                         return res == null ? l : res;
                     } else if (i == 0) {
                         // First will be the children & parent of following
-                        res = append(manager, new GraphImpl.NodeImpl(entry, null, List.of()), to, redirects, id,
+                        res = append(manager, Graph.node(entry), to, redirects, id,
                                 null, player, argToPacketId);
                         last = res;
                     } else {
-                        final int[] l = append(manager, new GraphImpl.NodeImpl(entry, null, List.of()), to, redirects,
+                        final int[] l = append(manager, Graph.node(entry), to, redirects,
                                 id, null, player, argToPacketId);
                         for (int n : last) {
                             to.get(n).children = l;
@@ -150,7 +165,7 @@ final class GraphConverter {
                 List<?> arguments = special.arguments();
                 for (int i = 0, appendIndex = 0; i < arguments.size(); i++) {
                     Object arg = arguments.get(i);
-                    final int[] append = append(manager, new GraphImpl.NodeImpl((Argument<?>) arg, null, List.of()), to,
+                    final int[] append = append(manager, Graph.node((Argument<?>) arg), to,
                             redirects, id, r, player, argToPacketId);
                     if (append.length == 1) {
                         res[appendIndex++] = append[0];
@@ -166,7 +181,7 @@ final class GraphConverter {
                 final boolean hasSuggestion = argument.hasSuggestion();
                 node.flags = arg(isExecutable, hasSuggestion);
                 node.name = argument.getId();
-                node.parser = argument.parser();
+                node.parser = PARSER_BY_KEY.get(argument.parser());
                 node.properties = argument.nodeProperties();
                 if (redirect != null) {
                     node.flags |= 0x8;

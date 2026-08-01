@@ -1,6 +1,6 @@
 package net.minestom.server.utils.entity;
 
-import net.minestom.server.command.ServerSender;
+import net.minestom.command.ServerSender;
 import net.minestom.server.command.builder.arguments.minecraft.ArgumentEntity;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;

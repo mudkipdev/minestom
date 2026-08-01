@@ -3,7 +3,7 @@ package net.minestom.server.utils.entity;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMaps;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.command.CommandSender;
+import net.minestom.command.CommandSender;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;

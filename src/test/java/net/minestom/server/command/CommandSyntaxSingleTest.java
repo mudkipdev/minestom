@@ -1,8 +1,8 @@
 package net.minestom.server.command;
 
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandContext;
-import net.minestom.server.command.builder.arguments.Argument;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandContext;
+import net.minestom.command.builder.arguments.Argument;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.Nullable;

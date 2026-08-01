@@ -1,7 +1,8 @@
 package net.minestom.server.command.builder.arguments.minecraft.registry;
 
+import net.kyori.adventure.key.Key;
 import net.minestom.server.command.ArgumentParserType;
-import net.minestom.server.command.builder.arguments.minecraft.SuggestionType;
+import net.minestom.command.builder.arguments.SuggestionType;
 import net.minestom.server.entity.EntityType;
 
 /**
@@ -15,8 +16,8 @@ public class ArgumentEntityType extends ArgumentRegistry<EntityType> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.RESOURCE_LOCATION;
+    public Key parser() {
+        return ArgumentParserType.RESOURCE_LOCATION.key();
     }
 
     @Override

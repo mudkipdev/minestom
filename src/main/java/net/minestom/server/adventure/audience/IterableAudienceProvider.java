@@ -3,7 +3,7 @@ package net.minestom.server.adventure.audience;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.command.ConsoleSender;
+import net.minestom.command.ConsoleSender;
 import net.minestom.server.entity.Player;
 
 import java.util.ArrayList;

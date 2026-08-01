@@ -1,4 +1,5 @@
 import net.kyori.adventure.text.event.ClickCallback;
+import net.minestom.command.builder.parser.ArgumentTypeProvider;
 import net.kyori.adventure.text.event.DataComponentValueConverterRegistry;
 import net.kyori.adventure.text.logger.slf4j.ComponentLoggerProvider;
 import net.kyori.adventure.text.serializer.ansi.ANSIComponentSerializer;
@@ -6,6 +7,7 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minestom.server.adventure.provider.MinestomAnsiComponentSerializerProvider;
+import net.minestom.server.command.MinecraftArguments;
 import net.minestom.server.adventure.provider.MinestomClickCallbackProvider;
 import net.minestom.server.adventure.provider.MinestomComponentLoggerProvider;
 import net.minestom.server.adventure.provider.MinestomDataComponentValueConverterProvider;
@@ -32,6 +34,7 @@ module net.minestom.server {
     requires jdk.jfr;
     requires java.desktop;
     requires net.minestom.data;
+    requires transitive net.minestom.command;
 
     // EXPORTS
     exports net.minestom.server;
@@ -45,16 +48,11 @@ module net.minestom.server {
     exports net.minestom.server.collision;
     exports net.minestom.server.color;
     exports net.minestom.server.command;
-    exports net.minestom.server.command.builder;
     exports net.minestom.server.command.builder.arguments;
     exports net.minestom.server.command.builder.arguments.minecraft;
     exports net.minestom.server.command.builder.arguments.minecraft.registry;
-    exports net.minestom.server.command.builder.arguments.number;
     exports net.minestom.server.command.builder.arguments.relative;
     exports net.minestom.server.command.builder.condition;
-    exports net.minestom.server.command.builder.exception;
-    exports net.minestom.server.command.builder.parser;
-    exports net.minestom.server.command.builder.suggestion;
     exports net.minestom.server.component;
     exports net.minestom.server.condition;
     exports net.minestom.server.coordinate;
@@ -196,6 +194,7 @@ module net.minestom.server {
     exports net.minestom.server.world.timeline;
     exports net.minestom.server.world.clock;
 
+    provides ArgumentTypeProvider with MinecraftArguments;
     provides ComponentLoggerProvider with MinestomComponentLoggerProvider;
     provides ANSIComponentSerializer.Provider with MinestomAnsiComponentSerializerProvider;
     provides ClickCallback.Provider with MinestomClickCallbackProvider;

@@ -1,5 +1,6 @@
 package net.minestom.server.command.builder.arguments.minecraft;
 
+import net.kyori.adventure.key.Key;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import net.kyori.adventure.text.Component;
@@ -8,9 +9,9 @@ import net.minestom.server.codec.Codec;
 import net.minestom.server.codec.Result;
 import net.minestom.server.codec.Transcoder;
 import net.minestom.server.command.ArgumentParserType;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 import net.minestom.server.registry.RegistryTranscoder;
 import net.minestom.server.utils.json.JsonUtil;
 
@@ -38,8 +39,8 @@ public class ArgumentComponent extends Argument<Component> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.COMPONENT;
+    public Key parser() {
+        return ArgumentParserType.COMPONENT.key();
     }
 
     @Override

@@ -1,14 +1,14 @@
 package net.minestom.demo.commands;
 
 import net.kyori.adventure.text.Component;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandContext;
-import net.minestom.server.command.builder.arguments.ArgumentLiteral;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandContext;
+import net.minestom.command.builder.arguments.ArgumentLiteral;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.command.builder.arguments.minecraft.ArgumentEntity;
 import net.minestom.server.command.builder.arguments.minecraft.ArgumentResource;
-import net.minestom.server.command.builder.arguments.number.ArgumentDouble;
+import net.minestom.command.builder.arguments.number.ArgumentDouble;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;

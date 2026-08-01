@@ -1,8 +1,8 @@
 package net.minestom.demo.commands;
 
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.CommandContext;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.Command;
+import net.minestom.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Weather;

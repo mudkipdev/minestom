@@ -28,7 +28,7 @@ import net.minestom.server.advancements.Notification;
 import net.minestom.server.adventure.AdventurePacketConvertor;
 import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.collision.BoundingBox;
-import net.minestom.server.command.CommandSender;
+import net.minestom.command.CommandSender;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.*;
 import net.minestom.server.dialog.Dialog;
@@ -538,7 +538,7 @@ public class Player extends LivingEntity implements CommandSender, HoverEventSou
 
     /**
      * Refreshes the command list for this player. This checks the
-     * {@link net.minestom.server.command.builder.condition.CommandCondition}s
+     * {@link net.minestom.command.builder.condition.CommandCondition}s
      * again, and any changes will be visible to the player.
      */
     public void refreshCommands() {

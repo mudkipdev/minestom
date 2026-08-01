@@ -1,11 +1,12 @@
 package net.minestom.server.command.builder.arguments.minecraft;
 
+import net.kyori.adventure.key.Key;
 import net.minestom.server.command.ArgumentParserType;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 import net.minestom.server.network.NetworkBuffer;
-import net.minestom.server.utils.StringUtils;
+import net.minestom.command.util.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 public class ArgumentResourceOrTag extends Argument<String> {
@@ -28,8 +29,8 @@ public class ArgumentResourceOrTag extends Argument<String> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.RESOURCE_OR_TAG;
+    public Key parser() {
+        return ArgumentParserType.RESOURCE_OR_TAG.key();
     }
 
     @Override

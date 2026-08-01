@@ -1,5 +1,6 @@
 package net.minestom.server.command.builder.arguments.minecraft;
 
+import net.kyori.adventure.key.Key;
 import net.minestom.server.command.ArgumentParserType;
 import net.minestom.server.utils.Range;
 
@@ -15,8 +16,8 @@ public class ArgumentIntRange extends ArgumentRange<Range.Int, Integer> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.INT_RANGE;
+    public Key parser() {
+        return ArgumentParserType.INT_RANGE.key();
     }
 
     @Override

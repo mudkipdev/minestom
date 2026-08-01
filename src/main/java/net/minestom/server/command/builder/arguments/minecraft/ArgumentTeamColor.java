@@ -1,10 +1,11 @@
 package net.minestom.server.command.builder.arguments.minecraft;
 
+import net.kyori.adventure.key.Key;
 import net.minestom.server.color.TeamColor;
 import net.minestom.server.command.ArgumentParserType;
-import net.minestom.server.command.CommandSender;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.exception.ArgumentSyntaxException;
+import net.minestom.command.CommandSender;
+import net.minestom.command.builder.arguments.Argument;
+import net.minestom.command.builder.exception.ArgumentSyntaxException;
 
 /**
  * Represents an argument which will give you a {@link TeamColor}.
@@ -28,8 +29,8 @@ public class ArgumentTeamColor extends Argument<TeamColor> {
     }
 
     @Override
-    public ArgumentParserType parser() {
-        return ArgumentParserType.TEAM_COLOR;
+    public Key parser() {
+        return ArgumentParserType.TEAM_COLOR.key();
     }
 
     @Override
