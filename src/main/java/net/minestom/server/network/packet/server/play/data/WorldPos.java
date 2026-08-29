@@ -2,6 +2,7 @@ package net.minestom.server.network.packet.server.play.data;
 
 import net.minestom.server.codec.Codec;
 import net.minestom.server.codec.StructCodec;
+import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.network.NetworkBuffer;
 import net.minestom.server.network.NetworkBufferTemplate;
@@ -13,7 +14,7 @@ public record WorldPos(String dimension, Point blockPosition) {
             WorldPos::new);
     public static final Codec<WorldPos> CODEC = StructCodec.struct(
             "dimension", Codec.STRING, WorldPos::dimension,
-            "pos", Codec.BLOCK_POSITION, WorldPos::blockPosition,
+            "pos", BlockVec.CODEC.transform(value -> (Point) value, Point::asBlockVec), WorldPos::blockPosition,
             WorldPos::new
     );
 

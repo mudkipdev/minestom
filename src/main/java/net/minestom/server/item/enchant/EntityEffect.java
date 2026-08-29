@@ -131,7 +131,7 @@ public non-sealed interface EntityEffect extends Enchantment.Effect {
                 "damage_type", DamageType.CODEC.optional(), Explode::damageType,
                 "knockback_multiplier", LevelBasedValue.CODEC.optional(), Explode::knockbackMultiplier,
                 "immune_blocks", Codec.RAW_VALUE.optional(), Explode::immuneBlocks,
-                "offset", Codec.VECTOR3D.optional(Vec.ZERO), Explode::offset,
+                "offset", Point.CODEC.optional(Vec.ZERO), Explode::offset,
                 "radius", LevelBasedValue.CODEC, Explode::radius,
                 "create_fire", Codec.BOOLEAN.optional(false), Explode::createFire,
                 "block_interaction", Codec.RAW_VALUE, Explode::blockInteraction,
@@ -164,8 +164,8 @@ public non-sealed interface EntityEffect extends Enchantment.Effect {
             LevelBasedValue magnitude
     ) implements EntityEffect, LocationEffect {
         public static final StructCodec<ApplyImpulse> CODEC = StructCodec.struct(
-                "direction", Codec.VECTOR3D, ApplyImpulse::direction,
-                "coordinate_scale", Codec.VECTOR3D, ApplyImpulse::coordinateScale,
+                "direction", Point.CODEC, ApplyImpulse::direction,
+                "coordinate_scale", Point.CODEC, ApplyImpulse::coordinateScale,
                 "magnitude", LevelBasedValue.CODEC, ApplyImpulse::magnitude,
                 ApplyImpulse::new);
 

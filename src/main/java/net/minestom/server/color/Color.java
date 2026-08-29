@@ -3,6 +3,7 @@ package net.minestom.server.color;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.util.RGBLike;
 import net.minestom.server.codec.Codec;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.network.NetworkBuffer;
 import net.minestom.server.network.NetworkBufferTemplate;
 import net.minestom.server.utils.MathUtils;
@@ -31,7 +32,7 @@ public class Color implements RGBLike {
     );
 
     public static final Codec<RGBLike> CODEC = Codec.INT.<RGBLike>transform(Color::new, color -> Color.fromRGBLike(color).asRGB())
-            .orElse(Codec.VECTOR3D, vector -> new Color((float) vector.x(), (float) vector.y(), (float) vector.z()));
+            .orElse(Vec.CODEC, vector -> new Color((float) vector.x(), (float) vector.y(), (float) vector.z()));
     public static final Codec<RGBLike> STRING_CODEC = Codec.STRING.transform(
             hex -> (RGBLike) Objects.requireNonNull(TextColor.fromHexString(hex)),
             color -> TextColor.color(color).asHexString()).orElse(CODEC);

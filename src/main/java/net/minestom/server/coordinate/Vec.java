@@ -1,8 +1,10 @@
 package net.minestom.server.coordinate;
 
+import net.minestom.server.codec.Codec;
 import net.minestom.server.instance.block.BlockFace;
 import org.jetbrains.annotations.Contract;
 
+import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -22,6 +24,16 @@ public record Vec(double x, double y, double z) implements Point {
     public static final Vec SECTION = new Vec(SECTION_SIZE);
     public static final Vec CHUNK = new Vec(SECTION_SIZE, SECTION_SIZE);
     public static final Vec REGION = new Vec(REGION_SIZE, REGION_SIZE);
+
+    public static final Codec<Vec> CODEC = Codec.DOUBLE.list(3).transform(
+            list -> {
+                if (list.size() != 3) {
+                    throw new IllegalArgumentException("Invalid length for Vec, expected 3 but got " + list.size());
+                }
+
+                return new Vec(list.get(0), list.get(1), list.get(2));
+            },
+            value -> value == null ? null : List.of(value.x(), value.y(), value.z()));
 
     /**
      * Creates a new vec with the [x;z] coordinates set. Y is set to 0.

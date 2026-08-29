@@ -8,8 +8,6 @@ import net.kyori.adventure.util.TriState;
 import net.minestom.server.codec.Transcoder.ListBuilder;
 import net.minestom.server.codec.Transcoder.MapBuilder;
 import net.minestom.server.codec.Transcoder.MapLike;
-import net.minestom.server.coordinate.Point;
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.gamedata.DataPack;
 import net.minestom.server.registry.Registries;
 import net.minestom.server.registry.RegistryKey;
@@ -530,28 +528,6 @@ final class CodecImpl {
         }
     }
 
-    record BlockPositionImpl() implements Codec<Point> {
-        @Override
-        public <D> Result<Point> decode(Transcoder<D> coder, D value) {
-            final Result<int[]> intArrayResult = coder.getIntArray(value);
-            if (!(intArrayResult instanceof Result.Ok(int[] intArray)))
-                return intArrayResult.cast();
-            if (intArray.length != 3)
-                return new Result.Error<>("Invalid length for Point, expected 3 but got " + intArray.length);
-            return new Result.Ok<>(new Vec(intArray[0], intArray[1], intArray[2]));
-        }
-
-        @Override
-        public <D> Result<D> encode(Transcoder<D> coder, @Nullable Point value) {
-            if (value == null) return new Result.Error<>("null");
-            return new Result.Ok<>(coder.createIntArray(new int[]{
-                    (int) value.x(),
-                    (int) value.y(),
-                    (int) value.z()
-            }));
-        }
-    }
-
     record EitherImpl<L, R>(Codec<L> leftCodec, Codec<R> rightCodec) implements Codec<Either<L, R>> {
         EitherImpl {
             Objects.requireNonNull(leftCodec, "leftCodec");
@@ -605,37 +581,6 @@ final class CodecImpl {
                 case Either.Left(L leftValue) -> leftCodec.encodeToMap(coder, leftValue, map);
                 case Either.Right(R rightValue) -> rightCodec.encodeToMap(coder, rightValue, map);
             };
-        }
-    }
-
-    record Vector3DImpl() implements Codec<Point> {
-        @Override
-        public <D> Result<Point> decode(Transcoder<D> coder, D value) {
-            final Result<List<D>> listResult = coder.getList(value);
-            if (!(listResult instanceof Result.Ok(List<D> list)))
-                return listResult.cast();
-            if (list.size() != 3)
-                return new Result.Error<>("Invalid length for Vector, expected 3 but got " + list.size());
-            final Result<Double> xResult = coder.getDouble(list.get(0));
-            if (!(xResult instanceof Result.Ok(Double x)))
-                return xResult.cast();
-            final Result<Double> yResult = coder.getDouble(list.get(1));
-            if (!(yResult instanceof Result.Ok(Double y)))
-                return yResult.cast();
-            final Result<Double> zResult = coder.getDouble(list.get(2));
-            if (!(zResult instanceof Result.Ok(Double z)))
-                return zResult.cast();
-            return new Result.Ok<>(new Vec(x, y, z));
-        }
-
-        @Override
-        public <D> Result<D> encode(Transcoder<D> coder, @Nullable Point value) {
-            if (value == null) return new Result.Error<>("null");
-            final ListBuilder<D> list = coder.createList(3);
-            list.add(coder.createDouble(value.x()));
-            list.add(coder.createDouble(value.y()));
-            list.add(coder.createDouble(value.z()));
-            return new Result.Ok<>(list.build());
         }
     }
 

@@ -1,5 +1,6 @@
 package net.minestom.server.coordinate;
 
+import net.minestom.server.codec.Codec;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.utils.Direction;
 import org.jetbrains.annotations.Contract;
@@ -31,6 +32,16 @@ public record BlockVec(int blockX, int blockY, int blockZ) implements Point {
     public static final BlockVec SECTION = new BlockVec(SECTION_SIZE);
     public static final BlockVec CHUNK = new BlockVec(SECTION_SIZE, SECTION_SIZE);
     public static final BlockVec REGION = new BlockVec(REGION_SIZE, REGION_SIZE);
+
+    public static final Codec<BlockVec> CODEC = Codec.INT_ARRAY.transform(
+            value -> {
+                if (value.length != 3) {
+                    throw new IllegalArgumentException("Invalid length for BlockVec, expected 3 but got " + value.length);
+                }
+
+                return new BlockVec(value[0], value[1], value[2]);
+            },
+            value -> value == null ? null : new int[]{value.blockX(), value.blockY(), value.blockZ()});
 
     /**
      * Narrows an assumed global coordinate to a block coordinate by flooring the value.

@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.util.TriState;
 import net.minestom.server.codec.CodecImpl.PrimitiveImpl;
-import net.minestom.server.coordinate.Point;
 import net.minestom.server.registry.Registries;
 import net.minestom.server.registry.Registry;
 import net.minestom.server.utils.Either;
@@ -129,10 +128,6 @@ public interface Codec<T extends @UnknownNullability Object> extends Encoder<T>,
     Codec<Component> COMPONENT = ComponentCodecs.COMPONENT;
 
     Codec<Style> COMPONENT_STYLE = ComponentCodecs.STYLE;
-
-    Codec<Point> BLOCK_POSITION = new CodecImpl.BlockPositionImpl();
-
-    Codec<Point> VECTOR3D = new CodecImpl.Vector3DImpl();
 
     Codec<BinaryTag> NBT = RAW_VALUE.transform(
             value -> value.convertTo(Transcoder.NBT).orElseThrow(),

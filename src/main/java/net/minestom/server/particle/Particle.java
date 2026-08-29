@@ -506,7 +506,7 @@ public sealed interface Particle extends StaticProtocolObject<Particle>, Particl
     ) implements Particle {
         public static final StructCodec<Trail> CODEC = StructCodec.struct(
                 "type", Codec.KEY, Trail::key,
-                "target", Codec.VECTOR3D, Trail::target,
+                "target", Point.CODEC, Trail::target,
                 "color", Color.CODEC, Trail::color,
                 "duration", Codec.INT, Trail::duration,
                 (type, target, color, duration) ->

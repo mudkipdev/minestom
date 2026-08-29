@@ -1,5 +1,6 @@
 package net.minestom.server.coordinate;
 
+import net.minestom.server.codec.Codec;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.utils.Direction;
 import net.minestom.server.utils.validate.Check;
@@ -54,6 +55,10 @@ import static net.minestom.server.coordinate.CoordConversion.globalToSection;
  * All implementations are immutable and subject to become value types. Type conversions are also explicit to avoid precision loss.
  */
 public sealed interface Point permits Vec, Pos, BlockVec {
+    @SuppressWarnings("ClassInitializationDeadlock")
+    Codec<Point> CODEC = Codec.ForwardRef(() -> Vec.CODEC)
+            .transform(value -> (Point) value, Point::asVec);
+
     /**
      * The smallest difference between two double values to consider them equal if applicable.
      */
